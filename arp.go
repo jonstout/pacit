@@ -1,5 +1,10 @@
 package pacit
 
+import (
+	"bytes"
+	"encoding/binary"
+)
+
 type ARP struct {
 	Ethernet
 	HWType uint16
