@@ -12,32 +12,67 @@ type LLDP struct {
 	TTL TTLTLV
 }
 
-type ChassisTLV struct {
-
-}
-
 // Chassis ID subtypes
 const (
 	_ = iota
-	CHASSIS_COMPONENT
-	IFACE_ALIAS
-	PORT_COMPONENT
-	MAC_ADDR
-	NET_ADDR
-	IFACE_NAME
-	LOCAL_ASSGN
+	CH_CHASSIS_COMPONENT
+	CH_IFACE_ALIAS
+	CH_PORT_COMPONENT
+	CH_MAC_ADDR
+	CH_NET_ADDR
+	CH_IFACE_NAME
+	CH_LOCAL_ASSGN
 )
+
+type ChassisTLV struct {
+	Type uint8
+	Length uint16
+	Subtype uint8
+	Data []uint8
+}
+
+func (t *ChassisTLV) Read(b []byte) (n int, err error) {
+	buf := new(bytes.Buffer)
+	var tni uint16 = 0
+	typeAndLen := (tni | t.Type << 9) + (tni | t.Length)
+	binary.Write(buf, binary.BigEndian, typeAndLen)
+	binary.Write(buf, binary.BigEndian, t.Subtype)
+	binary.Write(buf, binary.BigEndian, t.Data)
+	n, err = buf.Read(b)
+	return
+}
+
+func (t *ChassisTLV) Write(b []byte) (n int, err error) {
+	buf := bytes.NewBuffer(b)
+	var typeAndLen uint16 = 0
+	if err = binary.Read(buf, binary.BigEndian, &typeAndLen); err != nil {
+		return
+	}
+	n += 2
+	t.Type = uint8(typeAndLen >> 9)
+	t.Length = uint16( uint16(0x01ff) & typeAndLen)
+	if err = binary.Read(buf, binary.BigEndian, &t.Subtype); err != nil {
+		return
+	}
+	n += 1
+	t.Data = make([]uint8, t.Length)
+	if err = binary.Read(buf, binary.BigEndian, &t.Data); err != nil {
+		return
+	}
+	n += t.Length
+	return
+}
 
 // Port ID subtypes
 const (
 	_ = iota
-	IFACE_ALIAS
-	PORT_COMPONENT
-	MAC_ADDR
-	NET_ADDR	
-	IFACE_NAME
-	CIRCUIT_ID
-	LOCAL_ASSGN
+	PT_IFACE_ALIAS
+	PT_PORT_COMPONENT
+	PT_MAC_ADDR
+	PT_NET_ADDR	
+	PT_IFACE_NAME
+	PT_CIRCUIT_ID
+	PT_LOCAL_ASSGN
 )
 
 type PortTLV struct {
