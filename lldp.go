@@ -14,7 +14,6 @@ type LLDP struct {
 
 type ChassisTLV struct {
 
-
 }
 
 // Chassis ID subtypes
@@ -43,62 +42,69 @@ const (
 
 type PortTLV struct {
 	Type uint8 //7bits
-	Info uint16 //9bits
-	TTL uint16
+	Length uint16 //9bits
+	Subtype uint8
+	Data []uint8
 }
 
 func (t *PortTLV) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
 	var tni uint16 = 0
-	typeAndInfo := (tni | t.Type << 9) + (tni | t.Info)
-	binary.Write(buf, binary.BigEndian, typeAndInfo)
-	binary.Write(buf, binary.BigEndian, t.TTL)
+	typeAndLen := (tni | t.Type << 9) + (tni | t.Length)
+	binary.Write(buf, binary.BigEndian, typeAndLen)
+	binary.Write(buf, binary.BigEndian, t.Subtype)
+	binary.Write(buf, binary.BigEndian, t.Data)
 	n, err = buf.Read(b)
 	return
 }
 
 func (t *PortTLV) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
-	var typeAndInfo uint16 = 0
-	if err = binary.Read(buf, binary.BigEndian, &typeAndInfo); err != nil {
+	var typeAndLen uint16 = 0
+	if err = binary.Read(buf, binary.BigEndian, &typeAndLen); err != nil {
 		return
 	}
 	n += 2
-	t.Type = uint8(typeAndInfo >> 9)
-	t.Info = uint16( uint16(0x01ff) & typeAndInfo)
-	if err = binary.Read(buf, binary.BigEndian, &t.TTL); err != nil {
+	t.Type = uint8(typeAndLen >> 9)
+	t.Length = uint16( uint16(0x01ff) & typeAndLen)
+	if err = binary.Read(buf, binary.BigEndian, &t.Subtype); err != nil {
 		return
 	}
-	n += 2
+	n += 1
+	t.Data = make([]uint8, t.Length)
+	if err = binary.Read(buf, binary.BigEndian, &t.Data); err != nil {
+		return
+	}
+	n += t.Length
 	return
 }
 
 type TTLTLV struct {
 	Type uint8 //7 bits
-	Info uint16 //9 bits
-	TTL uint16
+	Length uint16 //9 bits
+	Seconds uint16
 }
 
 func (t *TTLTLV) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
 	var tni uint16 = 0
-	typeAndInfo := (tni | t.Type << 9) + (tni | t.Info)
-	binary.Write(buf, binary.BigEndian, typeAndInfo)
-	binary.Write(buf, binary.BigEndian, t.TTL)
+	typeAndLen := (tni | t.Type << 9) + (tni | t.Length)
+	binary.Write(buf, binary.BigEndian, typeAndLen)
+	binary.Write(buf, binary.BigEndian, t.Seconds)
 	n, err = buf.Read(b)
 	return
 }
 
 func (t *TTLTLV) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
-	var typeAndInfo uint16 = 0
-	if err = binary.Read(buf, binary.BigEndian, &typeAndInfo); err != nil {
+	var typeAndLen uint16 = 0
+	if err = binary.Read(buf, binary.BigEndian, &typeAndLen); err != nil {
 		return
 	}
 	n += 2
-	t.Type = uint8(typeAndInfo >> 9)
-	t.Info = uint16( uint16(0x01ff) & typeAndInfo)
-	if err = binary.Read(buf, binary.BigEndian, &t.TTL); err != nil {
+	t.Type = uint8(typeAndLen >> 9)
+	t.Length = uint16( uint16(0x01ff) & typeAndLen)
+	if err = binary.Read(buf, binary.BigEndian, &t.Seconds); err != nil {
 		return
 	}
 	n += 2
