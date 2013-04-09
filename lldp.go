@@ -65,7 +65,7 @@ func (t *PortTLV) Write(b []byte) (n int, err error) {
 	}
 	n += 2
 	t.Type = uint8(typeAndInfo >> 9)
-	t.Info = uint16( uint16(0) | typeAndInfo)
+	t.Info = uint16( uint16(0x01ff) & typeAndInfo)
 	if err = binary.Read(buf, binary.BigEndian, &t.TTL); err != nil {
 		return
 	}
@@ -97,7 +97,7 @@ func (t *TTLTLV) Write(b []byte) (n int, err error) {
 	}
 	n += 2
 	t.Type = uint8(typeAndInfo >> 9)
-	t.Info = uint16( uint16(0) | typeAndInfo)
+	t.Info = uint16( uint16(0x01ff) & typeAndInfo)
 	if err = binary.Read(buf, binary.BigEndian, &t.TTL); err != nil {
 		return
 	}
