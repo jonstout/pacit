@@ -12,6 +12,44 @@ type LLDP struct {
 	TTL TTLTLV
 }
 
+func (d *LLDP) Read(b []byte) (n int, err error) {
+	if n, err = Ethernet.Read(b); n == 0 {
+		return
+	}
+	if m, err = Chassis.Read(b); m == 0 {
+		return
+	}
+	n += m
+	if o, err = Port.Read(b); o == 0 {
+		return
+	}
+	n += o
+	if p, err = Chassis.Read(b); p == 0 {
+		return
+	}
+	n += p
+	return
+}
+
+func (d *LLDP) Write(b []byte) (n int, err error) {
+	if n, err = Ethernet.Write(b); n == 0 {
+		return
+	}
+	if m, err = Chassis.Write(b[n:]); m == 0 {
+		return
+	}
+	n += m
+	if o, err = Port.Write(b[n:]); o == 0 {
+		return
+	}
+	n += o
+	if p, err = Chassis.Write(b[n:]); p == 0 {
+		return
+	}
+	n += p
+	return	
+}
+
 // Chassis ID subtypes
 const (
 	_ = iota
