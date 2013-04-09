@@ -21,8 +21,8 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 	binary.Write(buf, binary.BigEndian, e.HWDst)
 	binary.Write(buf, binary.BigEndian, e.HWSrc)
 	if e.VLANID.VID != 0 {
-		b := []byte{0, 0}
-		e.VLANID.Read(b)
+		c := []byte{0, 0}
+		e.VLANID.Read(c)
 		binary.Write(buf, binary.BigEndian, b)
 	}
 	binary.Write(buf, binary.BigEndian, e.Ethertype)
@@ -54,10 +54,10 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 	n += 2
 	// If tagged
 	if e.Ethertype == 0x8100 {
-		b := make([]byte, 2)
-		b[0] = byte(e.Ethertype >> 8); b[1] = byte(e.Ethertype)
-		c := buf.Next(2)
-		e.VLANID.Write( append(b, c[0], c[1]) )
+		c := make([]byte, 2)
+		c[0] = byte(e.Ethertype >> 8); c[1] = byte(e.Ethertype)
+		d := buf.Next(2)
+		e.VLANID.Write( append(c, d[0], d[1]) )
 		n += 2
 		if err = binary.Read(buf, binary.BigEndian, &e.Ethertype); err != nil {
 			return
