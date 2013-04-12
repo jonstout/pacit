@@ -19,7 +19,7 @@ type ARP struct {
 }
 
 func (a *ARP) Read(b []byte) (n int, err error) {
-	n, err = Ethernet.Read(b)
+	n, err = a.Ethernet.Read(b)
 	if n == 0 {
 		return
 	}
@@ -38,7 +38,7 @@ func (a *ARP) Read(b []byte) (n int, err error) {
 }
 
 func (a *ARP) Write(b []byte) (n int, err error) {
-	n, err = Ethernet.Write(b)
+	n, err = a.Ethernet.Write(b)
 	if n == 0 {
 		return
 	}
