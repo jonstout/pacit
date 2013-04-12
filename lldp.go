@@ -16,6 +16,7 @@ func (d *LLDP) Read(b []byte) (n int, err error) {
 	if n, err = Ethernet.Read(b); n == 0 {
 		return
 	}
+	m := 0
 	if m, err = Chassis.Read(b); m == 0 {
 		return
 	}

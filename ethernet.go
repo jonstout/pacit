@@ -5,6 +5,11 @@ import (
 	"encoding/binary"
 )
 
+const (
+	ARP_MSG = 0x0806
+	LLDP_MSG = 0x88cc
+)
+
 type Ethernet struct {
 	Preamble [7]uint8
 	Delimiter uint8
