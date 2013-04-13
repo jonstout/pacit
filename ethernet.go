@@ -11,7 +11,7 @@ const (
 )
 
 type Ethernet struct {
-	Preamble [7]uint8
+	//Preamble [7]uint8
 	Delimiter uint8
 	HWDst [6]uint8
 	HWSrc [6]uint8
@@ -21,7 +21,7 @@ type Ethernet struct {
 
 func (e *Ethernet) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
-	binary.Write(buf, binary.BigEndian, e.Preamble)
+	//binary.Write(buf, binary.BigEndian, e.Preamble)
 	binary.Write(buf, binary.BigEndian, e.Delimiter)
 	binary.Write(buf, binary.BigEndian, e.HWDst)
 	binary.Write(buf, binary.BigEndian, e.HWSrc)
@@ -37,10 +37,10 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 
 func (e *Ethernet) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
-	if err = binary.Read(buf, binary.BigEndian, &e.Preamble); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &e.Preamble); err != nil {
 		return
 	}
-	n += 7
+	n += 7*/
 	if err = binary.Read(buf, binary.BigEndian, &e.Delimiter); err != nil {
 		return
 	}
