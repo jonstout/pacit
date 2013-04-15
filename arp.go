@@ -1,6 +1,7 @@
 package pacit
 
 import (
+	"io"
 	"net"
 	"bytes"
 	"encoding/binary"
@@ -20,11 +21,8 @@ type ARP struct {
 }
 
 func (a *ARP) Read(b []byte) (n int, err error) {
-	n, err = a.Ethernet.Read(b)
-	if n == 0 {
-		return
-	}
 	buf := new(bytes.Buffer)
+	_, err = buf.ReadFrom(&a.Ethernet)
 	binary.Write(buf, binary.BigEndian, a.HWType)
 	binary.Write(buf, binary.BigEndian, a.ProtoType)
 	binary.Write(buf, binary.BigEndian, a.HWLength)
@@ -35,7 +33,7 @@ func (a *ARP) Read(b []byte) (n int, err error) {
 	binary.Write(buf, binary.BigEndian, a.HWDst)
 	binary.Write(buf, binary.BigEndian, a.IPDst)
 	n, err = buf.Read(b)
-	return
+	return n, io.EOF
 }
 
 func (a *ARP) Write(b []byte) (n int, err error) {

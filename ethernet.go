@@ -1,6 +1,8 @@
 package pacit
 
 import (
+	"io"
+	"net"
 	"bytes"
 	"encoding/binary"
 )
@@ -13,16 +15,17 @@ const (
 type Ethernet struct {
 	//Preamble [7]uint8
 	Delimiter uint8
-	HWDst [6]uint8
-	HWSrc [6]uint8
+	HWDst net.HardwareAddr
+	HWSrc net.HardwareAddr
 	VLANID VLAN
 	Ethertype uint16
 }
 
 func (e *Ethernet) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
-	//binary.Write(buf, binary.BigEndian, e.Preamble)
-	binary.Write(buf, binary.BigEndian, e.Delimiter)
+	/*If you send a packet with the delimiter to the wire
+	packets are incorrectly interpreted. */
+	//binary.Write(buf, binary.BigEndian, e.Delimiter)
 	binary.Write(buf, binary.BigEndian, e.HWDst)
 	binary.Write(buf, binary.BigEndian, e.HWSrc)
 	if e.VLANID.VID != 0 {
@@ -32,7 +35,7 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 	}
 	binary.Write(buf, binary.BigEndian, e.Ethertype)
 	n, err = buf.Read(b)
-	return
+	return n, io.EOF
 }
 
 func (e *Ethernet) Write(b []byte) (n int, err error) {
@@ -45,10 +48,12 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 1
+	e.HWDst = make([]byte, 6)
 	if err = binary.Read(buf, binary.BigEndian, &e.HWDst); err != nil {
 		return
 	}
 	n += 6
+	e.HWSrc = make([]byte, 6)
 	if err = binary.Read(buf, binary.BigEndian, &e.HWSrc); err != nil {
 		return
 	}
