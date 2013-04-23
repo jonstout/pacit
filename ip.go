@@ -31,6 +31,7 @@ type IP struct {
 	NWSrc net.IPAddr
 	NWDst net.IPAddr
 	Options []byte
+	Data io.ReadWriter
 }
 
 func (i *IP) Len() (n uint16) {
