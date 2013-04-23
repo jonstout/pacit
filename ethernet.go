@@ -13,12 +13,20 @@ const (
 )
 
 type Ethernet struct {
-	//Preamble [7]uint8
 	Delimiter uint8
 	HWDst net.HardwareAddr
 	HWSrc net.HardwareAddr
 	VLANID VLAN
 	Ethertype uint16
+}
+
+func (e *Ethernet) Len() (n uint16) {
+	if e.VLANID.VID != 0 {
+		n += 5
+	}
+	n += 12
+	n += 2
+	return
 }
 
 func (e *Ethernet) Read(b []byte) (n int, err error) {

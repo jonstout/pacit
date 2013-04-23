@@ -20,6 +20,13 @@ type ARP struct {
 	IPDst net.IP
 }
 
+func (a *ARP) Len() (n uint16) {
+	n += a.Ethernet.Len()
+	n += 8
+	n += uint16(a.HWLength*2 + a.ProtoLength*2)
+	return
+}
+
 func (a *ARP) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
 	_, err = buf.ReadFrom(&a.Ethernet)
