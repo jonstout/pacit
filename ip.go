@@ -58,3 +58,7 @@ func (i *IP) Read(b []byte) (n int, err error) {
 	}
 	return n, io.EOF	
 }
+
+func (i *IP) Write(b []byte) (n int, err error) {
+	return
+}
