@@ -8,6 +8,7 @@ import (
 )
 
 const (
+	IPv4_MSG = 0x0800
 	ARP_MSG = 0x0806
 	LLDP_MSG = 0x88cc
 )

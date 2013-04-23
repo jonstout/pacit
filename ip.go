@@ -28,10 +28,9 @@ type IP struct {
 	TTL uint8
 	Protocol uint8
 	Checksum uint16
-	NWSrc net.IPAddr
-	NWDst net.IPAddr
+	NWSrc net.IP
+	NWDst net.IP
 	Options []byte
-	Data io.ReadWriter
 }
 
 func (i *IP) Len() (n uint16) {
@@ -54,13 +53,69 @@ func (i *IP) Read(b []byte) (n int, err error) {
 	binary.Write(buf, binary.BigEndian, i.NWSrc)
 	binary.Write(buf, binary.BigEndian, i.NWDst)
 	binary.Write(buf, binary.BigEndian, i.Options)
-	buf.ReadFrom(i.Data)
 	if n, err = buf.Read(b); n == 0 {
 		return
 	}
-	return n, io.EOF	
+	return n, io.EOF
 }
 
 func (i *IP) Write(b []byte) (n int, err error) {
+	buf := bytes.NewBuffer(b)
+	var verIhl uint8 = 0
+	if err = binary.Read(buf, binary.BigEndian, verIhl); err != nil {
+		return
+	}
+	n += 1
+	i.Version = verIhl >> 4
+	i.IHL = verIhl & 0x0f
+	var dscpEcn uint8 = 0
+	if err = binary.Read(buf, binary.BigEndian, dscpEcn); err != nil {
+		return
+	}
+	n += 1
+	i.DSCP = dscpEcn >> 2
+	i.ECN = dscpEcn & 0x02
+	if err = binary.Read(buf, binary.BigEndian, &i.Length); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(buf, binary.BigEndian, &i.ID); err != nil {
+		return
+	}
+	n += 2
+	var flagsFrag uint16 = 0
+	if err = binary.Read(buf, binary.BigEndian, flagsFrag); err != nil {
+		return
+	}
+	n += 2
+	i.Flags = flagsFrag >> 13
+	i.FragmentOffset = flagsFrag & 0x1fff
+	if err = binary.Read(buf, binary.BigEndian, &i.TTL); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(buf, binary.BigEndian, &i.Protocol); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(buf, binary.BigEndian, &i.Checksum); err != nil {
+		return
+	}
+	n += 2
+	i.NWSrc = make([]byte, 4)
+	if err = binary.Read(buf, binary.BigEndian, &i.NWSrc); err != nil {
+		return
+	}
+	n += 4
+	i.NWSrc = make([]byte, 4)
+	if err = binary.Read(buf, binary.BigEndian, &i.NWDst); err != nil {
+		return
+	}
+	n += 4
+	i.Options = make([]byte, 4*(int(i.IHL) - 5))
+	if err = binary.Read(buf, binary.BigEndian, &i.Options); err != nil {
+		return
+	}
+	n += 4*(int(i.IHL) - 5)
 	return
 }
