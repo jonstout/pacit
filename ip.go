@@ -8,15 +8,14 @@ import (
 )
 
 const (
-	ICMP = 0x01
-	IPv4 = 0x04
-	TCP = 0x06
-	UDP = 0x11
-	IPv6 = 0x29
-	IPv6ICMP = 0x3a
+	IP_ICMP = 0x01
+	IP_TCP = 0x06
+	IP_UDP = 0x11
+	IP_IPv6 = 0x29
+	IP_IPv6ICMP = 0x3a
 )
 
-type IP struct {
+type IPv4 struct {
 	Version uint8 //4-bits
 	IHL uint8 //4-bits
 	DSCP uint8 //6-bits
@@ -33,11 +32,11 @@ type IP struct {
 	Options []byte
 }
 
-func (i *IP) Len() (n uint16) {
+func (i *IPv4) Len() (n uint16) {
 	return uint16(i.IHL*32)
 }
 
-func (i *IP) Read(b []byte) (n int, err error) {
+func (i *IPv4) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
 	var verIhl uint8 = (i.Version << 4) + i.IHL
 	binary.Write(buf, binary.BigEndian, verIhl)
@@ -59,7 +58,7 @@ func (i *IP) Read(b []byte) (n int, err error) {
 	return n, io.EOF
 }
 
-func (i *IP) Write(b []byte) (n int, err error) {
+func (i *IPv4) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
 	var verIhl uint8 = 0
 	if err = binary.Read(buf, binary.BigEndian, verIhl); err != nil {
