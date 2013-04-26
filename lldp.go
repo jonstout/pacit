@@ -6,7 +6,6 @@ import (
 )
 
 type LLDP struct {
-	Ethernet
 	Chassis ChassisTLV
 	Port PortTLV
 	TTL TTLTLV
@@ -14,9 +13,6 @@ type LLDP struct {
 
 func (d *LLDP) Read(b []byte) (n int, err error) {
 	m, o, p := 0, 0, 0
-	if n, err = d.Ethernet.Read(b); n == 0 {
-		return
-	}
 	if m, err = d.Chassis.Read(b); m == 0 {
 		return
 	}
@@ -34,10 +30,7 @@ func (d *LLDP) Read(b []byte) (n int, err error) {
 
 func (d *LLDP) Write(b []byte) (n int, err error) {
 	m, o, p := 0, 0, 0
-	if n, err = d.Ethernet.Write(b); n == 0 {
-		return
-	}
-	if m, err = d.Chassis.Write(b[n:]); m == 0 {
+	if m, err = d.Chassis.Write(b); m == 0 {
 		return
 	}
 	n += m

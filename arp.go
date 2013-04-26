@@ -8,7 +8,6 @@ import (
 )
 
 type ARP struct {
-	Ethernet
 	HWType uint16
 	ProtoType uint16
 	HWLength uint8
@@ -21,7 +20,6 @@ type ARP struct {
 }
 
 func (a *ARP) Len() (n uint16) {
-	n += a.Ethernet.Len()
 	n += 8
 	n += uint16(a.HWLength*2 + a.ProtoLength*2)
 	return
@@ -29,7 +27,6 @@ func (a *ARP) Len() (n uint16) {
 
 func (a *ARP) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(&a.Ethernet)
 	binary.Write(buf, binary.BigEndian, a.HWType)
 	binary.Write(buf, binary.BigEndian, a.ProtoType)
 	binary.Write(buf, binary.BigEndian, a.HWLength)
@@ -44,11 +41,7 @@ func (a *ARP) Read(b []byte) (n int, err error) {
 }
 
 func (a *ARP) Write(b []byte) (n int, err error) {
-	n, err = a.Ethernet.Write(b)
-	if n == 0 {
-		return
-	}
-	buf := bytes.NewBuffer(b[n:])
+	buf := bytes.NewBuffer(b)
 	if err = binary.Read(buf, binary.BigEndian, &a.HWType); err != nil {
 		return
 	}

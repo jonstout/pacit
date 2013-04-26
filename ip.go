@@ -16,7 +16,6 @@ const (
 )
 
 type IPv4 struct {
-	Ethernet
 	Version uint8 //4-bits
 	IHL uint8 //4-bits
 	DSCP uint8 //6-bits
@@ -34,12 +33,11 @@ type IPv4 struct {
 }
 
 func (i *IPv4) Len() (n uint16) {
-	return i.Ethernet.Len() + uint16(i.IHL*32)
+	return uint16(i.IHL*32)
 }
 
 func (i *IPv4) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
-	_, err = buf.ReadFrom(&i.Ethernet)
 	var verIhl uint8 = (i.Version << 4) + i.IHL
 	binary.Write(buf, binary.BigEndian, verIhl)
 	var dscpEcn uint8 = (i.DSCP << 2) + i.ECN
@@ -61,10 +59,7 @@ func (i *IPv4) Read(b []byte) (n int, err error) {
 }
 
 func (i *IPv4) Write(b []byte) (n int, err error) {
-	if n, err = i.Ethernet.Write(b); n == 0 {
-		return
-	}
-	buf := bytes.NewBuffer(b[n:])
+	buf := bytes.NewBuffer(b)
 	var verIhl uint8 = 0
 	if err = binary.Read(buf, binary.BigEndian, verIhl); err != nil {
 		return
