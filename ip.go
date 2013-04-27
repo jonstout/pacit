@@ -1,6 +1,7 @@
 package pacit
 
 import (
+	"fmt"
 	"io"
 	"net"
 	"bytes"
@@ -30,13 +31,18 @@ type IPv4 struct {
 	NWSrc net.IP
 	NWDst net.IP
 	Options []byte
+	Data ReadWriteMeasurer
 }
 
 func (i *IPv4) Len() (n uint16) {
-	return uint16(i.IHL*32)
+	if i.Data != nil {
+		return uint16(i.IHL*4) + i.Data.Len()
+	}
+	return uint16(i.IHL*4)
 }
 
 func (i *IPv4) Read(b []byte) (n int, err error) {
+	fmt.Println("IPv4", i)
 	buf := new(bytes.Buffer)
 	var verIhl uint8 = (i.Version << 4) + i.IHL
 	binary.Write(buf, binary.BigEndian, verIhl)
@@ -52,6 +58,9 @@ func (i *IPv4) Read(b []byte) (n int, err error) {
 	binary.Write(buf, binary.BigEndian, i.NWSrc)
 	binary.Write(buf, binary.BigEndian, i.NWDst)
 	binary.Write(buf, binary.BigEndian, i.Options)
+	if n, err := buf.ReadFrom(i.Data); n == 0 {
+		return int(n), err
+	}
 	if n, err = buf.Read(b); n == 0 {
 		return
 	}
@@ -61,19 +70,19 @@ func (i *IPv4) Read(b []byte) (n int, err error) {
 func (i *IPv4) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
 	var verIhl uint8 = 0
-	if err = binary.Read(buf, binary.BigEndian, verIhl); err != nil {
+	if err = binary.Read(buf, binary.BigEndian, &verIhl); err != nil {
 		return
 	}
 	n += 1
 	i.Version = verIhl >> 4
 	i.IHL = verIhl & 0x0f
 	var dscpEcn uint8 = 0
-	if err = binary.Read(buf, binary.BigEndian, dscpEcn); err != nil {
+	if err = binary.Read(buf, binary.BigEndian, &dscpEcn); err != nil {
 		return
 	}
 	n += 1
 	i.DSCP = dscpEcn >> 2
-	i.ECN = dscpEcn & 0x02
+	i.ECN = dscpEcn & 0x03
 	if err = binary.Read(buf, binary.BigEndian, &i.Length); err != nil {
 		return
 	}
@@ -83,7 +92,7 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	}
 	n += 2
 	var flagsFrag uint16 = 0
-	if err = binary.Read(buf, binary.BigEndian, flagsFrag); err != nil {
+	if err = binary.Read(buf, binary.BigEndian, &flagsFrag); err != nil {
 		return
 	}
 	n += 2
@@ -92,11 +101,11 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	if err = binary.Read(buf, binary.BigEndian, &i.TTL); err != nil {
 		return
 	}
-	n += 2
+	n += 1
 	if err = binary.Read(buf, binary.BigEndian, &i.Protocol); err != nil {
 		return
 	}
-	n += 2
+	n += 1
 	if err = binary.Read(buf, binary.BigEndian, &i.Checksum); err != nil {
 		return
 	}
@@ -106,7 +115,7 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 4
-	i.NWSrc = make([]byte, 4)
+	i.NWDst = make([]byte, 4)
 	if err = binary.Read(buf, binary.BigEndian, &i.NWDst); err != nil {
 		return
 	}
@@ -115,6 +124,13 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	if err = binary.Read(buf, binary.BigEndian, &i.Options); err != nil {
 		return
 	}
-	n += 4*(int(i.IHL) - 5)
+	n += len(i.Options)
+	switch i.Protocol {
+	case IP_ICMP:
+		i.Data = new(ICMP)
+		m, _ := i.Data.Write(b[n:])
+		n += m
+	default:
+	}
 	return
 }
