@@ -33,7 +33,9 @@ func (e *Ethernet) Len() (n uint16) {
 	}
 	n += 12
 	n += 2
-	n += e.Data.Len()
+	if e.Data != nil {
+		n += e.Data.Len()
+	}
 	return
 }
 
@@ -41,7 +43,6 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
 	//If you send a packet with the delimiter to the wire
 	//packets are incorrectly interpreted.
-	//binary.Write(buf, binary.BigEndian, e.Delimiter)
 	binary.Write(buf, binary.BigEndian, e.HWDst)
 	binary.Write(buf, binary.BigEndian, e.HWSrc)
 	if e.VLANID.VID != 0 {
@@ -50,8 +51,11 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 		binary.Write(buf, binary.BigEndian, b)
 	}
 	binary.Write(buf, binary.BigEndian, e.Ethertype)
-	if n, err := buf.ReadFrom(e.Data); n == 0 {
-		return int(n), err
+	// In case the data type isn't known
+	if e.Data != nil {
+		if n, err := buf.ReadFrom(e.Data); n == 0 {
+			return int(n), err
+		}
 	}
 	n, err = buf.Read(b)
 	return n, io.EOF
@@ -83,6 +87,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		c := make([]byte, 2)
 		c[0] = byte(e.Ethertype >> 8); c[1] = byte(e.Ethertype)
 		d := buf.Next(2)
+		e.VLANID = *new(VLAN)
 		e.VLANID.Write( append(c, d[0], d[1]) )
 		//n -= 2
 		//m, _ := e.VLANID.Write(b[n:])
@@ -94,6 +99,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		n += 2
 		return
 	} else {
+		e.VLANID = *new(VLAN)
 		e.VLANID.VID = 0
 	}
 	switch e.Ethertype {
@@ -106,7 +112,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		m, _ := e.Data.Write(b[n:])
 		n += m
 	case LLDP_MSG:
-		e.Data = new(ICMP)
+		e.Data = new(LLDP)
 		m, _ := e.Data.Write(b[n:])
 		n += m
 	default:

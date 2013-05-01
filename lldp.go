@@ -11,6 +11,10 @@ type LLDP struct {
 	TTL TTLTLV
 }
 
+func (d *LLDP) Len() (n uint16) {
+	return 15
+}
+
 func (d *LLDP) Read(b []byte) (n int, err error) {
 	m, o, p := 0, 0, 0
 	if m, err = d.Chassis.Read(b); m == 0 {

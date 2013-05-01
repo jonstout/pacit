@@ -1,7 +1,6 @@
 package pacit
 
 import (
-	"fmt"
 	"io"
 	"net"
 	"bytes"
@@ -42,7 +41,6 @@ func (i *IPv4) Len() (n uint16) {
 }
 
 func (i *IPv4) Read(b []byte) (n int, err error) {
-	fmt.Println("IPv4", i)
 	buf := new(bytes.Buffer)
 	var verIhl uint8 = (i.Version << 4) + i.IHL
 	binary.Write(buf, binary.BigEndian, verIhl)
