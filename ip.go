@@ -56,8 +56,10 @@ func (i *IPv4) Read(b []byte) (n int, err error) {
 	binary.Write(buf, binary.BigEndian, i.NWSrc)
 	binary.Write(buf, binary.BigEndian, i.NWDst)
 	binary.Write(buf, binary.BigEndian, i.Options)
-	if n, err := buf.ReadFrom(i.Data); n == 0 {
-		return int(n), err
+	if i.Data != nil {
+		if n, err := buf.ReadFrom(i.Data); n == 0 {
+			return int(n), err
+		}
 	}
 	if n, err = buf.Read(b); n == 0 {
 		return
