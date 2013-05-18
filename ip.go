@@ -67,6 +67,77 @@ func (i *IPv4) Read(b []byte) (n int, err error) {
 	return n, io.EOF
 }
 
+func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
+	var verIhl uint8 = 0
+	if err = binary.Read(r, binary.BigEndian, &verIhl); err != nil {
+		return
+	}
+	n += 1
+	i.Version = verIhl >> 4
+	i.IHL = verIhl & 0x0f
+	var dscpEcn uint8 = 0
+	if err = binary.Read(r, binary.BigEndian, &dscpEcn); err != nil {
+		return
+	}
+	n += 1
+	i.DSCP = dscpEcn >> 2
+	i.ECN = dscpEcn & 0x03
+	if err = binary.Read(r, binary.BigEndian, &i.Length); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(r, binary.BigEndian, &i.ID); err != nil {
+		return
+	}
+	n += 2
+	var flagsFrag uint16 = 0
+	if err = binary.Read(r, binary.BigEndian, &flagsFrag); err != nil {
+		return
+	}
+	n += 2
+	i.Flags = flagsFrag >> 13
+	i.FragmentOffset = flagsFrag & 0x1fff
+	if err = binary.Read(r, binary.BigEndian, &i.TTL); err != nil {
+		return
+	}
+	n += 1
+	if err = binary.Read(r, binary.BigEndian, &i.Protocol); err != nil {
+		return
+	}
+	n += 1
+	if err = binary.Read(r, binary.BigEndian, &i.Checksum); err != nil {
+		return
+	}
+	n += 2
+	i.NWSrc = make([]byte, 4)
+	if err = binary.Read(r, binary.BigEndian, &i.NWSrc); err != nil {
+		return
+	}
+	n += 4
+	i.NWDst = make([]byte, 4)
+	if err = binary.Read(r, binary.BigEndian, &i.NWDst); err != nil {
+		return
+	}
+	n += 4
+	i.Options = make([]byte, 4*(int(i.IHL) - 5))
+	if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
+		return
+	}
+	n += int64( len(i.Options) )
+	/*
+	switch i.Protocol {
+	case IP_ICMP:
+		i.Data = new(ICMP)
+		m, _ := i.Data.Write(b[n:])
+		n += m
+	default:
+	}*/
+	trash := make([]byte, int(i.Length - 20))
+	binary.Read(r, binary.BigEndian, &trash)
+	n = int64(i.Length)
+	return
+}
+
 func (i *IPv4) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
 	var verIhl uint8 = 0
@@ -131,6 +202,9 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 		m, _ := i.Data.Write(b[n:])
 		n += m
 	default:
+		trash := make([]byte, int(i.Length - 20))
+		binary.Read(buf, binary.BigEndian, &trash)
+		n = int(i.Length)
 	}
 	return
 }

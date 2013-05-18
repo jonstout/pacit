@@ -40,6 +40,50 @@ func (a *ARP) Read(b []byte) (n int, err error) {
 	return n, io.EOF
 }
 
+func (a *ARP) ReadFrom(r io.Reader) (n int64, err error) {
+	if err = binary.Read(r, binary.BigEndian, &a.HWType); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(r, binary.BigEndian, &a.ProtoType); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(r, binary.BigEndian, &a.HWLength); err != nil {
+		return
+	}
+	n += 1
+	if err = binary.Read(r, binary.BigEndian, &a.ProtoLength); err != nil {
+		return
+	}
+	n += 1
+	if err = binary.Read(r, binary.BigEndian, &a.Operation); err != nil {
+		return
+	}
+	n += 2
+	a.HWSrc = make([]byte, 6)
+	if err = binary.Read(r, binary.BigEndian, &a.HWSrc); err != nil {
+		return
+	}
+	n += 6
+	a.IPSrc = make([]byte, 4)
+	if err = binary.Read(r, binary.BigEndian, &a.IPSrc); err != nil {
+		return
+	}
+	n += 4
+	a.HWDst = make([]byte, 6)
+	if err = binary.Read(r, binary.BigEndian, &a.HWDst); err != nil {
+		return
+	}
+	n += 6
+	a.IPDst = make([]byte, 4)
+	if err = binary.Read(r, binary.BigEndian, &a.IPDst); err != nil {
+		return
+	}
+	n += 4
+	return
+}
+
 func (a *ARP) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
 	if err = binary.Read(buf, binary.BigEndian, &a.HWType); err != nil {
@@ -82,5 +126,8 @@ func (a *ARP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 4
+	if buf.Len() > 0 {
+		n += buf.Len()
+	}
 	return
 }

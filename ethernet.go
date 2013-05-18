@@ -13,10 +13,17 @@ const (
 	LLDP_MSG = 0x88cc
 )
 
+type ReadWriterMeasurer interface {
+	io.Reader
+	io.ReaderFrom
+	Len() uint16
+}
+
 type ReadWriteMeasurer interface {
 	io.ReadWriter
 	Len() uint16
 }
+
 
 type Ethernet struct {
 	Delimiter uint8
@@ -60,6 +67,56 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 	n, err = buf.Read(b)
 	return n, io.EOF
 }
+/*
+func (e *Ethernet) ReadFrom(r io.Reader) (n int64, err error) {
+	if err = binary.Read(r, binary.BigEndian, &e.Delimiter); err != nil {
+		return
+	}
+	n += 1
+	e.HWDst = make([]byte, 6)
+	if err = binary.Read(r, binary.BigEndian, &e.HWDst); err != nil {
+		return
+	}
+	n += 6
+	e.HWSrc = make([]byte, 6)
+	if err = binary.Read(r, binary.BigEndian, &e.HWSrc); err != nil {
+		return
+	}
+	n += 6
+	if err = binary.Read(r, binary.BigEndian, &e.Ethertype); err != nil {
+		return
+	}
+	n += 2
+	e.VLANID = *NewVLAN()
+	if e.Ethertype == 0x8100 {
+		if m, err2 := e.VLANID.ReadFrom(r); err != nil {
+			return m, err2
+		} else {
+			n += m
+		}
+		if err = binary.Read(r, binary.BigEndian, &e.Ethertype); err != nil {
+			return
+		}
+		n += 2
+		return
+	}
+	switch e.Ethertype {
+	case IPv4_MSG:
+		e.Data = new(IPv4)
+		m, _ := e.Data.ReadFrom(r)
+		n += m
+	case ARP_MSG:
+		e.Data = new(ARP)
+		m, _ := e.Data.ReadFrom(r)
+		n += m
+/*	case LLDP_MSG:
+		e.Data = new(LLDP)
+		m, _ := e.Data.Write(b[n:])
+		n += m*/
+/*	default:
+	}
+	return
+}*/
 
 func (e *Ethernet) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
@@ -111,11 +168,12 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		e.Data = new(ARP)
 		m, _ := e.Data.Write(b[n:])
 		n += m
-	case LLDP_MSG:
+	/*case LLDP_MSG:
 		e.Data = new(LLDP)
 		m, _ := e.Data.Write(b[n:])
-		n += m
+		n += m*/
 	default:
+		n += buf.Len()
 	}
 	return
 }
@@ -133,6 +191,12 @@ type VLAN struct {
 	VID uint8
 }
 
+func NewVLAN() *VLAN {
+	v := new(VLAN)
+	v.TPID = 0x8100
+	return v
+}
+
 func (v *VLAN) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, v.TPID)
@@ -140,6 +204,18 @@ func (v *VLAN) Read(b []byte) (n int, err error) {
 	tci = (tci | uint16(v.PCP) << 13) + (tci | uint16(v.DEI) << 12) + (tci | uint16(v.VID))
 	binary.Write(buf, binary.BigEndian, tci)
 	n, err = buf.Read(b)
+	return
+}
+
+func (v *VLAN) ReadFrom(r io.Reader) (n int64, err error) {
+	var tci uint16 = 0
+	if err = binary.Read(r, binary.BigEndian, &tci); err != nil {
+		return
+	}
+	n += 2
+	v.PCP = uint8(PCP_MASK & tci >> 13)
+	v.DEI = uint8(DEI_MASK & tci >> 12)
+	v.VID = uint8(VID_MASK & tci)
 	return
 }
 
