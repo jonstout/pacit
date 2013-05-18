@@ -119,40 +119,45 @@ func (e *Ethernet) ReadFrom(r io.Reader) (n int64, err error) {
 }*/
 
 func (e *Ethernet) Write(b []byte) (n int, err error) {
-	buf := bytes.NewBuffer(b)
-	// Delimiter comes in from the wire. Not sure why this is the case.
+	//buf := bytes.NewBuffer(b)
+	/* Delimiter comes in from the wire. Not sure why this is the case.
 	if err = binary.Read(buf, binary.BigEndian, &e.Delimiter); err != nil {
 		return
-	}
+	}*/
 	n += 1
 	e.HWDst = make([]byte, 6)
-	if err = binary.Read(buf, binary.BigEndian, &e.HWDst); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &e.HWDst); err != nil {
 		return
-	}
+	}*/
+	e.HWDst = b[1:7]
 	n += 6
 	e.HWSrc = make([]byte, 6)
-	if err = binary.Read(buf, binary.BigEndian, &e.HWSrc); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &e.HWSrc); err != nil {
 		return
-	}
+	}*/
+	e.HWSrc = b[7:13]
 	n += 6
-	if err = binary.Read(buf, binary.BigEndian, &e.Ethertype); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &e.Ethertype); err != nil {
 		return
-	}
+	}*/
+	e.Ethertype = binary.BigEndian.Uint16(b[13:15])
 	n += 2
 	// If tagged
 	if e.Ethertype == 0x8100 {
-		c := make([]byte, 2)
-		c[0] = byte(e.Ethertype >> 8); c[1] = byte(e.Ethertype)
-		d := buf.Next(2)
+		//c := make([]byte, 2)
+		//c[0] = byte(e.Ethertype >> 8); c[1] = byte(e.Ethertype)
+		//d := buf.Next(2)
 		e.VLANID = *new(VLAN)
-		e.VLANID.Write( append(c, d[0], d[1]) )
+		//e.VLANID.Write( append(c, d[0], d[1]) )
+		e.VLANID.Write(b[13:17])
 		//n -= 2
 		//m, _ := e.VLANID.Write(b[n:])
 		//n += m
 		n += 2
-		if err = binary.Read(buf, binary.BigEndian, &e.Ethertype); err != nil {
+		/*if err = binary.Read(buf, binary.BigEndian, &e.Ethertype); err != nil {
 			return
-		}
+		}*/
+		e.Ethertype = binary.BigEndian.Uint16(b[13:15])
 		n += 2
 		return
 	} else {
@@ -173,7 +178,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		m, _ := e.Data.Write(b[n:])
 		n += m*/
 	default:
-		n += buf.Len()
+		n += len(b[n:])
 	}
 	return
 }
