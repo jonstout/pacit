@@ -159,11 +159,11 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		}*/
 		e.Ethertype = binary.BigEndian.Uint16(b[13:15])
 		n += 2
-		return
 	} else {
 		e.VLANID = *new(VLAN)
 		e.VLANID.VID = 0
 	}
+
 	switch e.Ethertype {
 	case IPv4_MSG:
 		e.Data = new(IPv4)

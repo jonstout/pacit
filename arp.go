@@ -85,49 +85,59 @@ func (a *ARP) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 func (a *ARP) Write(b []byte) (n int, err error) {
-	buf := bytes.NewBuffer(b)
+	/*buf := bytes.NewBuffer(b)
 	if err = binary.Read(buf, binary.BigEndian, &a.HWType); err != nil {
 		return
-	}
+	}*/
+	a.HWType = binary.BigEndian.Uint16(b[:2])
 	n += 2
-	if err = binary.Read(buf, binary.BigEndian, &a.ProtoType); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.ProtoType); err != nil {
 		return
-	}
+	}*/
+	a.ProtoType = binary.BigEndian.Uint16(b[2:4])
 	n += 2
-	if err = binary.Read(buf, binary.BigEndian, &a.HWLength); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.HWLength); err != nil {
 		return
-	}
+	}*/
+	a.HWLength = b[4]
 	n += 1
-	if err = binary.Read(buf, binary.BigEndian, &a.ProtoLength); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.ProtoLength); err != nil {
 		return
-	}
+	}*/
+	a.ProtoLength = b[5]
 	n += 1
-	if err = binary.Read(buf, binary.BigEndian, &a.Operation); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.Operation); err != nil {
 		return
-	}
+	}*/
+	a.Operation = binary.BigEndian.Uint16(b[6:8])
 	n += 2
 	a.HWSrc = make([]byte, 6)
-	if err = binary.Read(buf, binary.BigEndian, &a.HWSrc); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.HWSrc); err != nil {
 		return
-	}
+	}*/
+	a.HWSrc = b[8:14]
 	n += 6
 	a.IPSrc = make([]byte, 4)
-	if err = binary.Read(buf, binary.BigEndian, &a.IPSrc); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.IPSrc); err != nil {
 		return
-	}
+	}*/
+	a.IPSrc = b[14:18]
 	n += 4
 	a.HWDst = make([]byte, 6)
-	if err = binary.Read(buf, binary.BigEndian, &a.HWDst); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.HWDst); err != nil {
 		return
-	}
+	}*/
+	a.HWDst = b[18:24]
 	n += 6
 	a.IPDst = make([]byte, 4)
-	if err = binary.Read(buf, binary.BigEndian, &a.IPDst); err != nil {
+	/*if err = binary.Read(buf, binary.BigEndian, &a.IPDst); err != nil {
 		return
-	}
+	}*/
+	a.IPDst = b[24:28]
 	n += 4
-	if buf.Len() > 0 {
+	/*if buf.Len() > 0 {
 		n += buf.Len()
-	}
+	}*/
+	n += len(b[28:])
 	return
 }
