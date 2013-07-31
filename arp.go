@@ -7,6 +7,11 @@ import (
 	"encoding/binary"
 )
 
+const (
+	ARP_REQUEST = 1
+	ARP_REPLY = 2
+)
+
 type ARP struct {
 	HWType uint16
 	ProtoType uint16
@@ -17,6 +22,22 @@ type ARP struct {
 	IPSrc net.IP
 	HWDst net.HardwareAddr
 	IPDst net.IP
+}
+
+func NewArp() *ARP {
+	a := new(ARP)
+	a.HWType = 1
+	a.ProtoType = 0x800
+	a.HWLength = 6
+	a.ProtoLength = 4
+	a.Operation = ARP_REPLY
+	a.HWSrc = net.HardwareAddr(make([]byte, 6))
+	a.IPSrc = net.IP(make([]byte, 4))
+	a.HWDst = net.HardwareAddr(make([]byte, 6))
+	a.IPDst = net.IP(make([]byte, 4))
+	eth := *NewEthernet()
+	eth.Data = a
+	return a
 }
 
 func (a *ARP) Len() (n uint16) {

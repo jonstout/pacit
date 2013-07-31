@@ -34,6 +34,17 @@ type Ethernet struct {
 	Data ReadWriteMeasurer
 }
 
+
+func NewEthernet() *Ethernet {
+	eth := new(Ethernet)
+	eth.HWDst = net.HardwareAddr(make([]byte, 6))
+	eth.HWSrc = net.HardwareAddr(make([]byte, 6))
+	eth.VLANID = *NewVLAN()
+	eth.Ethertype = 0x800
+	return eth
+}
+
+
 func (e *Ethernet) Len() (n uint16) {
 	if e.VLANID.VID != 0 {
 		n += 5
@@ -139,6 +150,7 @@ type VLAN struct {
 func NewVLAN() *VLAN {
 	v := new(VLAN)
 	v.TPID = 0x8100
+	v.VID = 0
 	return v
 }
 
