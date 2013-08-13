@@ -123,6 +123,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		e.Data = new(ARP)
 		m, _ := e.Data.Write(b[n:])
 		n += m
+	case RARP_MSG:
 	/*case LLDP_MSG:
 	e.Data = new(LLDP)
 	m, _ := e.Data.Write(b[n:])
