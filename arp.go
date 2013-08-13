@@ -1,30 +1,30 @@
 package pacit
 
 import (
-	"io"
-	"net"
 	"bytes"
 	"encoding/binary"
+	"io"
+	"net"
 )
 
 const (
 	ARP_REQUEST = 1
-	ARP_REPLY = 2
+	ARP_REPLY   = 2
 )
 
 type ARP struct {
-	HWType uint16
-	ProtoType uint16
-	HWLength uint8
+	HWType      uint16
+	ProtoType   uint16
+	HWLength    uint8
 	ProtoLength uint8
-	Operation uint16
-	HWSrc net.HardwareAddr
-	IPSrc net.IP
-	HWDst net.HardwareAddr
-	IPDst net.IP
+	Operation   uint16
+	HWSrc       net.HardwareAddr
+	IPSrc       net.IP
+	HWDst       net.HardwareAddr
+	IPDst       net.IP
 }
 
-func NewArp() *ARP {
+func NewARP() *ARP {
 	a := new(ARP)
 	a.HWType = 1
 	a.ProtoType = 0x800
