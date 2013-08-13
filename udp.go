@@ -31,6 +31,27 @@ func (u *UDP) Read(b []byte) (n int, err error) {
 	return n, io.EOF
 }
 
+/*
+func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
+	if err = binary.Read(r, binary.BigEndian, &u.PortSrc); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(r, binary.BigEndian, &u.PortDst); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(r, binary.BigEndian, &u.Length); err != nil {
+		return
+	}
+	n += 2
+	if err = binary.Read(r, binary.BigEndian, &u.Checksum); err != nil {
+		return
+	}
+	n += 2
+	return
+}
+*/
 func (u *UDP) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
 	if err = binary.Read(buf, binary.BigEndian, &u.PortSrc); err != nil {

@@ -124,16 +124,23 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += int64(len(i.Options))
+	switch i.Protocol {
 	/*
-		switch i.Protocol {
 		case IP_ICMP:
 			i.Data = new(ICMP)
-			m, _ := i.Data.Write(b[n:])
+			m, _ := i.Data.Write(r)
 			n += m
-		default:
-		}*/
-	trash := make([]byte, int(i.Length-20))
-	binary.Read(r, binary.BigEndian, &trash)
+	*/
+	case IP_UDP:
+		i.Data = new(UDP)
+		buf := make([]byte, int(i.Length-20))
+		binary.Read(r, binary.BigEndian, &buf)
+		m, _ := i.Data.Write(buf)
+		n += int64(m)
+	default:
+		trash := make([]byte, int(i.Length-20))
+		binary.Read(r, binary.BigEndian, &trash)
+	}
 	n = int64(i.Length)
 	return
 }
@@ -149,9 +156,9 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	i.Version = verIhl >> 4
 	i.IHL = verIhl & 0x0f
 	/*var dscpEcn uint8 = 0
-	if err = binary.Read(buf, binary.BigEndian, &dscpEcn); err != nil {
-		return
-	}*/
+		if err = binary.Read(buf, binary.BigEndian, &dscpEcn); err != nil {
+	x		return
+		}*/
 	dscpEcn := b[1]
 	n += 1
 	i.DSCP = dscpEcn >> 2
@@ -218,8 +225,8 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 		m, _ := i.Data.Write(b[n:])
 		n += m
 	default:
-		//trash := make([]byte, int(i.Length - 20))
-		//binary.Read(buf, binary.BigEndian, &trash)
+		//		trash := make([]byte, int(i.Length-20))
+		//		binary.Read(buf, binary.BigEndian, &trash)
 		n = int(i.Length)
 	}
 	return
