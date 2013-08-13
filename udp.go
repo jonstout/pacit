@@ -15,7 +15,10 @@ type UDP struct {
 }
 
 func (u *UDP) Len() (n uint16) {
-	return uint16(8 + len(u.Data))
+	if u.Data != nil {
+		return uint16(8 + len(u.Data))
+	}
+	return uint16(8)
 }
 
 func (u *UDP) Read(b []byte) (n int, err error) {
@@ -31,7 +34,6 @@ func (u *UDP) Read(b []byte) (n int, err error) {
 	return n, io.EOF
 }
 
-/*
 func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 	if err = binary.Read(r, binary.BigEndian, &u.PortSrc); err != nil {
 		return
@@ -51,7 +53,7 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 	n += 2
 	return
 }
-*/
+
 func (u *UDP) Write(b []byte) (n int, err error) {
 	buf := bytes.NewBuffer(b)
 	if err = binary.Read(buf, binary.BigEndian, &u.PortSrc); err != nil {
@@ -75,5 +77,7 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += len(u.Data)
+	ipv4 := new(IPv4)
+	ipv4.Data = u
 	return
 }

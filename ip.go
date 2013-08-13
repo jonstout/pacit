@@ -125,18 +125,14 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 	}
 	n += int64(len(i.Options))
 	switch i.Protocol {
-	/*
-		case IP_ICMP:
-			i.Data = new(ICMP)
-			m, _ := i.Data.Write(r)
-			n += m
-	*/
+	case IP_ICMP:
+		i.Data = new(ICMP)
+		m, _ := i.Data.Write(r)
+		n += m
 	case IP_UDP:
 		i.Data = new(UDP)
-		buf := make([]byte, int(i.Length-20))
-		binary.Read(r, binary.BigEndian, &buf)
-		m, _ := i.Data.Write(buf)
-		n += int64(m)
+		m, _ := i.Data.Write(r)
+		n += m
 	default:
 		trash := make([]byte, int(i.Length-20))
 		binary.Read(r, binary.BigEndian, &trash)
@@ -216,15 +212,17 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	i.Options = b[20 : 20+optLen]
 	n += optLen //len(i.Options)
 	switch i.Protocol {
-	case IP_ICMP:
-		i.Data = new(ICMP)
-		m, _ := i.Data.Write(b[n:])
-		n += m
+	//	case IP_ICMP:
+	//		i.Data = new(ICMP)
+	//		m, _ := i.Data.Write(b[n:])
+	//		n += m
 	case IP_UDP:
 		i.Data = new(UDP)
 		m, _ := i.Data.Write(b[n:])
+		//	panic(fmt.Sprintf("%+v\n", i.Data))
 		n += m
 	default:
+		//		panic(fmt.Sprintf("%0x\n", i.Protocol))
 		//		trash := make([]byte, int(i.Length-20))
 		//		binary.Read(buf, binary.BigEndian, &trash)
 		n = int(i.Length)
