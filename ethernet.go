@@ -63,10 +63,11 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 	//packets are incorrectly interpreted.
 	binary.Write(buf, binary.BigEndian, e.HWDst)
 	binary.Write(buf, binary.BigEndian, e.HWSrc)
+
 	if e.VLANID.VID != 0 {
 		c := []byte{0, 0}
 		e.VLANID.Read(c)
-		binary.Write(buf, binary.BigEndian, b)
+		binary.Write(buf, binary.BigEndian, c)
 	}
 	binary.Write(buf, binary.BigEndian, e.Ethertype)
 	// In case the data type isn't known

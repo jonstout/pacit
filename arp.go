@@ -35,8 +35,6 @@ func NewArp() *ARP {
 	a.IPSrc = net.IP(make([]byte, 4))
 	a.HWDst = net.HardwareAddr(make([]byte, 6))
 	a.IPDst = net.IP(make([]byte, 4))
-	eth := *NewEthernet()
-	eth.Data = a
 	return a
 }
 
@@ -61,104 +59,30 @@ func (a *ARP) Read(b []byte) (n int, err error) {
 	return n, io.EOF
 }
 
-func (a *ARP) ReadFrom(r io.Reader) (n int64, err error) {
-	if err = binary.Read(r, binary.BigEndian, &a.HWType); err != nil {
-		return
-	}
-	n += 2
-	if err = binary.Read(r, binary.BigEndian, &a.ProtoType); err != nil {
-		return
-	}
-	n += 2
-	if err = binary.Read(r, binary.BigEndian, &a.HWLength); err != nil {
-		return
-	}
-	n += 1
-	if err = binary.Read(r, binary.BigEndian, &a.ProtoLength); err != nil {
-		return
-	}
-	n += 1
-	if err = binary.Read(r, binary.BigEndian, &a.Operation); err != nil {
-		return
-	}
-	n += 2
-	a.HWSrc = make([]byte, 6)
-	if err = binary.Read(r, binary.BigEndian, &a.HWSrc); err != nil {
-		return
-	}
-	n += 6
-	a.IPSrc = make([]byte, 4)
-	if err = binary.Read(r, binary.BigEndian, &a.IPSrc); err != nil {
-		return
-	}
-	n += 4
-	a.HWDst = make([]byte, 6)
-	if err = binary.Read(r, binary.BigEndian, &a.HWDst); err != nil {
-		return
-	}
-	n += 6
-	a.IPDst = make([]byte, 4)
-	if err = binary.Read(r, binary.BigEndian, &a.IPDst); err != nil {
-		return
-	}
-	n += 4
-	return
-}
 
 func (a *ARP) Write(b []byte) (n int, err error) {
-	/*buf := bytes.NewBuffer(b)
-	if err = binary.Read(buf, binary.BigEndian, &a.HWType); err != nil {
-		return
-	}*/
 	a.HWType = binary.BigEndian.Uint16(b[:2])
 	n += 2
-	/*if err = binary.Read(buf, binary.BigEndian, &a.ProtoType); err != nil {
-		return
-	}*/
 	a.ProtoType = binary.BigEndian.Uint16(b[2:4])
 	n += 2
-	/*if err = binary.Read(buf, binary.BigEndian, &a.HWLength); err != nil {
-		return
-	}*/
 	a.HWLength = b[4]
 	n += 1
-	/*if err = binary.Read(buf, binary.BigEndian, &a.ProtoLength); err != nil {
-		return
-	}*/
 	a.ProtoLength = b[5]
 	n += 1
-	/*if err = binary.Read(buf, binary.BigEndian, &a.Operation); err != nil {
-		return
-	}*/
 	a.Operation = binary.BigEndian.Uint16(b[6:8])
 	n += 2
-	a.HWSrc = make([]byte, 6)
-	/*if err = binary.Read(buf, binary.BigEndian, &a.HWSrc); err != nil {
-		return
-	}*/
+	//a.HWSrc = make([]byte, 6)
 	a.HWSrc = b[8:14]
 	n += 6
-	a.IPSrc = make([]byte, 4)
-	/*if err = binary.Read(buf, binary.BigEndian, &a.IPSrc); err != nil {
-		return
-	}*/
+	//a.IPSrc = make([]byte, 4)
 	a.IPSrc = b[14:18]
 	n += 4
-	a.HWDst = make([]byte, 6)
-	/*if err = binary.Read(buf, binary.BigEndian, &a.HWDst); err != nil {
-		return
-	}*/
+	//a.HWDst = make([]byte, 6)
 	a.HWDst = b[18:24]
 	n += 6
-	a.IPDst = make([]byte, 4)
-	/*if err = binary.Read(buf, binary.BigEndian, &a.IPDst); err != nil {
-		return
-	}*/
+	//a.IPDst = make([]byte, 4)
 	a.IPDst = b[24:28]
 	n += 4
-	/*if buf.Len() > 0 {
-		n += buf.Len()
-	}*/
-	n += len(b[28:])
+	//n += len(b[28:])
 	return
 }
