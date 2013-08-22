@@ -1,16 +1,16 @@
 package pacit
 
 import (
-	"io"
 	"bytes"
 	"encoding/binary"
+	"io"
 )
 
 type ICMP struct {
-	Type uint8
-	Code uint8
+	Type     uint8
+	Code     uint8
 	Checksum uint16
-	Data []byte
+	Data     []byte
 }
 
 func (i *ICMP) Len() (n uint16) {
@@ -27,6 +27,22 @@ func (i *ICMP) Read(b []byte) (n int, err error) {
 		return
 	}
 	return n, io.EOF
+}
+
+func (i *ICMP) ReadFrom(r io.Reader) (n int64, err error) {
+	if err = binary.Read(r, binary.BigEndian, &i.Type); err != nil {
+		return
+	}
+	n += 1
+	if err = binary.Read(r, binary.BigEndian, &i.Code); err != nil {
+		return
+	}
+	n += 1
+	if err = binary.Read(r, binary.BigEndian, &i.Checksum); err != nil {
+		return
+	}
+	n += 2
+	return
 }
 
 func (i *ICMP) Write(b []byte) (n int, err error) {
