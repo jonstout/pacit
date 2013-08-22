@@ -24,7 +24,7 @@ type ARP struct {
 	IPDst       net.IP
 }
 
-func NewARP(Operation int) *ARP {
+func NewARP(Operation uint16) *ARP {
 	a := new(ARP)
 	a.HWType = 1
 	a.ProtoType = 0x800
