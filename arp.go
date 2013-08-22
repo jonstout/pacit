@@ -24,13 +24,13 @@ type ARP struct {
 	IPDst       net.IP
 }
 
-func NewARP() *ARP {
+func NewARP(Operation uint16) *ARP {
 	a := new(ARP)
 	a.HWType = 1
 	a.ProtoType = 0x800
 	a.HWLength = 6
 	a.ProtoLength = 4
-	a.Operation = ARP_REPLY
+	a.Operation = Operation
 	a.HWSrc = net.HardwareAddr(make([]byte, 6))
 	a.IPSrc = net.IP(make([]byte, 4))
 	a.HWDst = net.HardwareAddr(make([]byte, 6))
