@@ -1,43 +1,43 @@
 package pacit
 
 import (
-	"io"
-	"net"
 	"bytes"
 	"encoding/binary"
+	"io"
+	"net"
 )
 
 const (
-	IP_ICMP = 0x01
-	IP_TCP = 0x06
-	IP_UDP = 0x11
-	IP_IPv6 = 0x29
+	IP_ICMP     = 0x01
+	IP_TCP      = 0x06
+	IP_UDP      = 0x11
+	IP_IPv6     = 0x29
 	IP_IPv6ICMP = 0x3a
 )
 
 type IPv4 struct {
-	Version uint8 //4-bits
-	IHL uint8 //4-bits
-	DSCP uint8 //6-bits
-	ECN uint8 //2-bits
-	Length uint16
-	ID uint16
-	Flags uint16 //3-bits
+	Version        uint8 //4-bits
+	IHL            uint8 //4-bits
+	DSCP           uint8 //6-bits
+	ECN            uint8 //2-bits
+	Length         uint16
+	ID             uint16
+	Flags          uint16 //3-bits
 	FragmentOffset uint16 //13-bits
-	TTL uint8
-	Protocol uint8
-	Checksum uint16
-	NWSrc net.IP
-	NWDst net.IP
-	Options []byte
-	Data ReadWriteMeasurer
+	TTL            uint8
+	Protocol       uint8
+	Checksum       uint16
+	NWSrc          net.IP
+	NWDst          net.IP
+	Options        []byte
+	Data           ReadWriteMeasurer
 }
 
 func (i *IPv4) Len() (n uint16) {
 	if i.Data != nil {
 		return uint16(i.IHL*4) + i.Data.Len()
 	}
-	return uint16(i.IHL*4)
+	return uint16(i.IHL * 4)
 }
 
 func (i *IPv4) Read(b []byte) (n int, err error) {
@@ -119,21 +119,30 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += 4
-	i.Options = make([]byte, 4*(int(i.IHL) - 5))
+	i.Options = make([]byte, 4*(int(i.IHL)-5))
 	if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
 		return
 	}
-	n += int64( len(i.Options) )
-	/*
+	n += int64(len(i.Options))
 	switch i.Protocol {
 	case IP_ICMP:
+		trash := make([]byte, int(i.Length-20))
+		binary.Read(r, binary.BigEndian, &trash)
 		i.Data = new(ICMP)
-		m, _ := i.Data.Write(b[n:])
-		n += m
+		if n, err := i.Data.Read(trash); err != nil {
+			return int64(n), err
+		}
+	case IP_UDP:
+		i.Data = new(UDP)
+		trash := make([]byte, int(i.Length-20))
+		binary.Read(r, binary.BigEndian, &trash)
+		if n, err := i.Data.Read(trash); err != nil {
+			return int64(n), err
+		}
 	default:
-	}*/
-	trash := make([]byte, int(i.Length - 20))
-	binary.Read(r, binary.BigEndian, &trash)
+		trash := make([]byte, int(i.Length-20))
+		binary.Read(r, binary.BigEndian, &trash)
+	}
 	n = int64(i.Length)
 	return
 }
@@ -149,9 +158,9 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	i.Version = verIhl >> 4
 	i.IHL = verIhl & 0x0f
 	/*var dscpEcn uint8 = 0
-	if err = binary.Read(buf, binary.BigEndian, &dscpEcn); err != nil {
-		return
-	}*/
+		if err = binary.Read(buf, binary.BigEndian, &dscpEcn); err != nil {
+	x		return
+		}*/
 	dscpEcn := b[1]
 	n += 1
 	i.DSCP = dscpEcn >> 2
@@ -201,21 +210,26 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	}*/
 	i.NWDst = b[16:20]
 	n += 4
-	optLen := 4*(int(i.IHL) - 5)
-	i.Options = make([]byte, optLen)//4*(int(i.IHL) - 5))
+	optLen := 4 * (int(i.IHL) - 5)
+	i.Options = make([]byte, optLen) //4*(int(i.IHL) - 5))
 	/*if err = binary.Read(buf, binary.BigEndian, &i.Options); err != nil {
 		return
 	}*/
-	i.Options = b[20:20+optLen]
-	n += optLen//len(i.Options)
+	i.Options = b[20 : 20+optLen]
+	n += optLen //len(i.Options)
 	switch i.Protocol {
 	case IP_ICMP:
 		i.Data = new(ICMP)
 		m, _ := i.Data.Write(b[n:])
 		n += m
+	case IP_UDP:
+		i.Data = new(UDP)
+		m, _ := i.Data.Write(b[n:])
+		n += m
 	default:
-		//trash := make([]byte, int(i.Length - 20))
-		//binary.Read(buf, binary.BigEndian, &trash)
+		//		panic(fmt.Sprintf("%0x\n", i.Protocol))
+		//		trash := make([]byte, int(i.Length-20))
+		//		binary.Read(buf, binary.BigEndian, &trash)
 		n = int(i.Length)
 	}
 	return

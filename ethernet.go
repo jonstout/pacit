@@ -1,16 +1,20 @@
 package pacit
 
 import (
-	"io"
-	"net"
 	"bytes"
 	"encoding/binary"
+	"io"
+	"net"
 )
 
+// see http://en.wikipedia.org/wiki/EtherType
 const (
 	IPv4_MSG = 0x0800
-	ARP_MSG = 0x0806
+	ARP_MSG  = 0x0806
 	LLDP_MSG = 0x88cc
+	WOL_MSG  = 0x0842
+	RARP_MSG = 0x8035
+	VLAN_MSG = 0x8100
 )
 
 type ReadWriterMeasurer interface {
@@ -24,16 +28,14 @@ type ReadWriteMeasurer interface {
 	Len() uint16
 }
 
-
 type Ethernet struct {
 	Delimiter uint8
-	HWDst net.HardwareAddr
-	HWSrc net.HardwareAddr
-	VLANID VLAN
+	HWDst     net.HardwareAddr
+	HWSrc     net.HardwareAddr
+	VLANID    VLAN
 	Ethertype uint16
-	Data ReadWriteMeasurer
+	Data      ReadWriteMeasurer
 }
-
 
 func NewEthernet() *Ethernet {
 	eth := new(Ethernet)
@@ -43,7 +45,6 @@ func NewEthernet() *Ethernet {
 	eth.Ethertype = 0x800
 	return eth
 }
-
 
 func (e *Ethernet) Len() (n uint16) {
 	if e.VLANID.VID != 0 {
@@ -80,10 +81,10 @@ func (e *Ethernet) Read(b []byte) (n int, err error) {
 	return n, io.EOF
 }
 
-type PacitBuffer struct { *bytes.Buffer }
+type PacitBuffer struct{ *bytes.Buffer }
 
 func NewBuffer(buf []byte) *PacitBuffer {
-	b := &PacitBuffer{ Buffer: bytes.NewBuffer(buf)}
+	b := &PacitBuffer{Buffer: bytes.NewBuffer(buf)}
 	return b
 }
 
@@ -103,7 +104,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 	e.Ethertype = binary.BigEndian.Uint16(b[13:15])
 	n += 2
 	// If tagged
-	if e.Ethertype == 0x8100 {
+	if e.Ethertype == VLAN_MSG {
 		e.VLANID = *new(VLAN)
 		e.VLANID.Write(b[13:17])
 		n += 2
@@ -123,10 +124,11 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 		e.Data = new(ARP)
 		m, _ := e.Data.Write(b[n:])
 		n += m
+	case RARP_MSG:
 	/*case LLDP_MSG:
-		e.Data = new(LLDP)
-		m, _ := e.Data.Write(b[n:])
-		n += m*/
+	e.Data = new(LLDP)
+	m, _ := e.Data.Write(b[n:])
+	n += m*/
 	default:
 		e.Data = NewBuffer(b[n:])
 		n += int(e.Data.Len())
@@ -143,9 +145,9 @@ const (
 
 type VLAN struct {
 	TPID uint16
-	PCP uint8
-	DEI uint8
-	VID uint8
+	PCP  uint8
+	DEI  uint8
+	VID  uint8
 }
 
 func NewVLAN() *VLAN {
@@ -159,7 +161,7 @@ func (v *VLAN) Read(b []byte) (n int, err error) {
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, v.TPID)
 	var tci uint16 = 0
-	tci = (tci | uint16(v.PCP) << 13) + (tci | uint16(v.DEI) << 12) + (tci | uint16(v.VID))
+	tci = (tci | uint16(v.PCP)<<13) + (tci | uint16(v.DEI)<<12) + (tci | uint16(v.VID))
 	binary.Write(buf, binary.BigEndian, tci)
 	n, err = buf.Read(b)
 	return
