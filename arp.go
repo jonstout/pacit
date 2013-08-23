@@ -3,6 +3,7 @@ package pacit
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"io"
 	"net"
 )
@@ -24,7 +25,13 @@ type ARP struct {
 	IPDst       net.IP
 }
 
-func NewARP(Operation uint16) *ARP {
+func NewARP(Operation uint16) (*ARP, error) {
+	switch Operation {
+	case ARP_REQUEST, ARP_REPLY:
+		break
+	default:
+		return nil, errors.New("Invalid ARP Operation")
+	}
 	a := new(ARP)
 	a.HWType = 1
 	a.ProtoType = 0x800
@@ -35,7 +42,7 @@ func NewARP(Operation uint16) *ARP {
 	a.IPSrc = net.IP(make([]byte, 4))
 	a.HWDst = net.HardwareAddr(make([]byte, 6))
 	a.IPDst = net.IP(make([]byte, 4))
-	return a
+	return a, nil
 }
 
 func (a *ARP) Len() (n uint16) {
@@ -58,7 +65,6 @@ func (a *ARP) Read(b []byte) (n int, err error) {
 	n, err = buf.Read(b)
 	return n, io.EOF
 }
-
 
 func (a *ARP) Write(b []byte) (n int, err error) {
 	a.HWType = binary.BigEndian.Uint16(b[:2])

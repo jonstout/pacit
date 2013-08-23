@@ -77,7 +77,5 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += len(u.Data)
-	ipv4 := new(IPv4)
-	ipv4.Data = u
 	return
 }
