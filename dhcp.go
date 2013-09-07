@@ -16,6 +16,8 @@ const (
 	DHCP_MSG_BOOT_RES
 )
 
+type DHCPOperation byte
+
 const (
 	DHCP_MSG_UNSPEC byte = iota
 	DHCP_MSG_DISCOVER
@@ -29,7 +31,7 @@ const (
 )
 
 type DHCP struct {
-	Operation    byte
+	Operation    DHCPOperation
 	HardwareType byte
 	HardwareLen  uint8
 	HardwareOpts uint8
@@ -83,7 +85,7 @@ func NewDHCP(xid uint32, op, hwtype byte, hwaddr net.HardwareAddr, C, Y, S, G ne
 		return nil, errors.New("Bad HardwareType")
 	}
 	d := &DHCP{
-		Operation:    op,
+		Operation:    DHCPOperation(op),
 		HardwareType: hwtype,
 		HardwareLen:  byte(len(hwaddr)),
 		Xid:          xid,
@@ -180,14 +182,13 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 128
-
-	var magic [4]byte
-	if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
-		return
-	}
-	n += 4
-
-	println(buf.Bytes())
+	/*
+		var magic [4]byte
+		if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
+			return
+		}
+		n += 4
+	*/
 	if d.Options, err = DHCPParseOptions(buf.Bytes()); err != nil {
 		return
 	}
