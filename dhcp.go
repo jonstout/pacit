@@ -182,48 +182,12 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	}
 	n += 128
 
-	return
-}
+	if d.Options, err = DHCPParseOptions(b[n:]); err != nil {
+		return
+	}
 
-/*
-func (i *ICMP) ReadFrom(r io.Reader) (n int64, err error) {
-	if err = binary.Read(r, binary.BigEndian, &i.Type); err != nil {
-		return
-	}
-	n += 1
-	if err = binary.Read(r, binary.BigEndian, &i.Code); err != nil {
-		return
-	}
-	n += 1
-	if err = binary.Read(r, binary.BigEndian, &i.Checksum); err != nil {
-		return
-	}
-	n += 2
 	return
 }
-
-func (i *ICMP) Write(b []byte) (n int, err error) {
-	buf := bytes.NewBuffer(b)
-	if err = binary.Read(buf, binary.BigEndian, &i.Type); err != nil {
-		return
-	}
-	n += 1
-	if err = binary.Read(buf, binary.BigEndian, &i.Code); err != nil {
-		return
-	}
-	n += 1
-	if err = binary.Read(buf, binary.BigEndian, &i.Checksum); err != nil {
-		return
-	}
-	n += 2
-	i.Data = make([]byte, len(b)-n)
-	if err = binary.Read(buf, binary.BigEndian, &i.Data); err != nil {
-		return
-	}
-	n += len(i.Data)
-	return
-}
-*/
 
 // Standard options (RFC1533)
 const (
