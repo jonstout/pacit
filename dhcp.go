@@ -140,7 +140,6 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 1
-
 	if err = binary.Read(buf, binary.BigEndian, &d.Xid); err != nil {
 		return
 	}
@@ -181,6 +180,12 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 128
+
+	var magick [4]byte
+	if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
+		return
+	}
+	n += 4
 
 	if d.Options, err = DHCPParseOptions(b[n:]); err != nil {
 		println(err.Error())
