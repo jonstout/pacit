@@ -126,7 +126,9 @@ func (d *DHCP) Read(b []byte) (n int, err error) {
 }
 
 func (d *DHCP) Write(b []byte) (n int, err error) {
+	log.Printf("%d\n", len(b))
 	buf := bytes.NewBuffer(b)
+
 	if err = binary.Read(buf, binary.BigEndian, &d.Operation); err != nil {
 		return
 	}
