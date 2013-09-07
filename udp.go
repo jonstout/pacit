@@ -11,7 +11,7 @@ type UDP struct {
 	PortDst  uint16
 	Length   uint16
 	Checksum uint16
-	Data     ReadWriteMeasurer
+	Data     []byte
 }
 
 func (u *UDP) Len() (n uint16) {
