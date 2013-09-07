@@ -191,9 +191,9 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		n += 4
 	*/
 	log.Printf("%+v\n", buf.Bytes())
-	if d.Options, err = DHCPParseOptions(buf.Bytes()); err != nil {
-		return
-	}
+	//	if d.Options, err = DHCPParseOptions(buf.Bytes()); err != nil {
+	//	return
+	//}
 
 	return
 }
