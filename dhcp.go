@@ -32,7 +32,7 @@ type DHCP struct {
 	Operation    byte
 	HardwareType byte
 	HardwareLen  uint8
-	Hops         uint8
+	HardwareOpts uint8
 	Xid          uint32
 	Secs         uint16
 	Flags        uint16
@@ -41,6 +41,8 @@ type DHCP struct {
 	ServerIP     net.IP
 	GatewayIP    net.IP
 	ClientHWAddr net.HardwareAddr
+	ServerName   [64]byte
+	File         [128]byte
 	Options      []DHCPOption
 }
 
@@ -103,6 +105,7 @@ func (d *DHCP) Read(b []byte) (n int, err error) {
 	binary.Write(buf, binary.BigEndian, d.Operation)
 	binary.Write(buf, binary.BigEndian, d.HardwareType)
 	binary.Write(buf, binary.BigEndian, d.HardwareLen)
+	binary.Write(buf, binary.BigEndian, d.HardwareOpts)
 	binary.Write(buf, binary.BigEndian, d.Xid)
 	binary.Write(buf, binary.BigEndian, d.Secs)
 	binary.Write(buf, binary.BigEndian, d.Flags)
@@ -111,6 +114,8 @@ func (d *DHCP) Read(b []byte) (n int, err error) {
 	binary.Write(buf, binary.BigEndian, d.ServerIP)
 	binary.Write(buf, binary.BigEndian, d.GatewayIP)
 	binary.Write(buf, binary.BigEndian, d.ClientHWAddr)
+	binary.Write(buf, binary.BigEndian, d.ServerName)
+	binary.Write(buf, binary.BigEndian, d.File)
 	if n, err = buf.Read(b); n == 0 {
 		return
 	}
@@ -126,15 +131,20 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	if err = binary.Read(buf, binary.BigEndian, &d.HardwareType); err != nil {
 		return
 	}
-	n += 2
+	n += 1
 	if err = binary.Read(buf, binary.BigEndian, &d.HardwareLen); err != nil {
 		return
 	}
-	n += 2
+	n += 1
+	if err = binary.Read(buf, binary.BigEndian, &d.HardwareOpts); err != nil {
+		return
+	}
+	n += 1
+
 	if err = binary.Read(buf, binary.BigEndian, &d.Xid); err != nil {
 		return
 	}
-	n += 2
+	n += 4
 	if err = binary.Read(buf, binary.BigEndian, &d.Secs); err != nil {
 		return
 	}
@@ -146,23 +156,32 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	if err = binary.Read(buf, binary.BigEndian, &d.ClientIP); err != nil {
 		return
 	}
-	n += 2
+	n += 4
 	if err = binary.Read(buf, binary.BigEndian, &d.YourIP); err != nil {
 		return
 	}
-	n += 2
+	n += 4
 	if err = binary.Read(buf, binary.BigEndian, &d.ServerIP); err != nil {
 		return
 	}
-	n += 2
+	n += 4
 	if err = binary.Read(buf, binary.BigEndian, &d.GatewayIP); err != nil {
 		return
 	}
-	n += 2
+	n += 4
 	if err = binary.Read(buf, binary.BigEndian, &d.ClientHWAddr); err != nil {
 		return
 	}
-	n += 4
+	n += 16
+	if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
+		return
+	}
+	n += 64
+	if err = binary.Read(buf, binary.BigEndian, &d.File); err != nil {
+		return
+	}
+	n += 128
+
 	return
 }
 
