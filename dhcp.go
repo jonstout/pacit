@@ -4,7 +4,6 @@ import (
 	//	"bytes"
 	"encoding/binary"
 	"errors"
-	"log"
 	//"io"
 	"bytes"
 	"io"
@@ -126,7 +125,6 @@ func (d *DHCP) Read(b []byte) (n int, err error) {
 }
 
 func (d *DHCP) Write(b []byte) (n int, err error) {
-	log.Printf("%d\n", len(b))
 	buf := bytes.NewBuffer(b)
 
 	if err = binary.Read(buf, binary.BigEndian, &d.Operation); err != nil {
@@ -186,16 +184,18 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	}
 	n += 128
 
-	var magic [4]byte
-	if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
+	/*
+		var magic [4]byte
+		if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
+			return
+		}
+		n += 4
+
+		log.Printf("%+v\n", magic)
+	*/
+	if d.Options, err = DHCPParseOptions(buf.Bytes()); err != nil {
 		return
 	}
-	n += 4
-
-	log.Printf("%+v\n", magic)
-	//	if d.Options, err = DHCPParseOptions(buf.Bytes()); err != nil {
-	//	return
-	//}
 
 	return
 }
