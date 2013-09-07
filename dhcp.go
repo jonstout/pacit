@@ -183,6 +183,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	n += 128
 
 	if d.Options, err = DHCPParseOptions(b[n:]); err != nil {
+		println(err.Error())
 		return
 	}
 
