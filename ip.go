@@ -134,9 +134,9 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 	case IP_UDP:
 		i.Data = new(UDP)
-		trash := make([]byte, int(i.Length-20))
-		binary.Read(r, binary.BigEndian, &trash)
-		if n, err := i.Data.Read(trash); err != nil {
+		data := make([]byte, int(i.Length-20))
+		binary.Read(r, binary.BigEndian, &data)
+		if n, err := i.Data.Read(data); err != nil {
 			return int64(n), err
 		}
 	default:
