@@ -4,6 +4,7 @@ import (
 	//	"bytes"
 	"encoding/binary"
 	"errors"
+	"log"
 	//"io"
 	"bytes"
 	"io"
@@ -189,7 +190,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		}
 		n += 4
 	*/
-	println(buf.Bytes())
+	log.Printf("%+v\n", buf.Bytes())
 	if d.Options, err = DHCPParseOptions(buf.Bytes()); err != nil {
 		return
 	}
