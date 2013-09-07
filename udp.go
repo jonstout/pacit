@@ -72,7 +72,7 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 2
-	u.Data = make([]byte, len(b)-n)
+	u.Data = make([]byte, buf.Len())
 	if err = binary.Read(buf, binary.BigEndian, &u.Data); err != nil {
 		return
 	}
