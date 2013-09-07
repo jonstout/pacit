@@ -186,7 +186,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		println(err.Error())
 		return
 	}
-
+	println(b[n:])
 	return
 }
 
