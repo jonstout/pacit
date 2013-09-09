@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"log"
 )
 
 type UDP struct {
@@ -81,13 +80,12 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 2
-	if u.Length >= uint16(8) {
-		u.Data = make([]byte, int(u.Length-uint16(8)))
-	}
-	if u.Length == uint16(0) {
-		u.Data = make([]byte, buf.Len())
-	}
-	log.Printf("udp buf: %+v\n", buf.Bytes())
+	//	if u.Length >= uint16(8) {
+	//		u.Data = make([]byte, int(u.Length-uint16(8)))
+	//	}
+	//	if u.Length == uint16(0) {
+	u.Data = make([]byte, buf.Len())
+	///	}
 
 	m, err := io.ReadFull(buf, u.Data)
 	n += m
