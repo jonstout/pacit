@@ -51,7 +51,7 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += 2
-	if u.Length >= 8 {
+	if u.Length > 8 {
 		u.Data = make([]byte, u.Length-8)
 	}
 	//	if u.Length == 0 {
