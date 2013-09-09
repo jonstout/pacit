@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"log"
 )
 
 type UDP struct {
@@ -22,6 +23,7 @@ func (u *UDP) Len() (n uint16) {
 }
 
 func (u *UDP) Read(b []byte) (n int, err error) {
+	log.Printf("read\n")
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, u.PortSrc)
 	binary.Write(buf, binary.BigEndian, u.PortDst)
@@ -35,6 +37,7 @@ func (u *UDP) Read(b []byte) (n int, err error) {
 }
 
 func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
+	log.Printf("readfrom\n")
 	if err = binary.Read(r, binary.BigEndian, &u.PortSrc); err != nil {
 		return
 	}
@@ -63,6 +66,7 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 func (u *UDP) Write(b []byte) (n int, err error) {
+	log.Printf("write\n")
 	buf := bytes.NewBuffer(b)
 	if err = binary.Read(buf, binary.BigEndian, &u.PortSrc); err != nil {
 		return
