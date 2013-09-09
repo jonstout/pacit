@@ -185,7 +185,6 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	d.ClientHWAddr = net.HardwareAddr(clientHWAddr[:d.HardwareLen])
-
 	n += int(d.HardwareLen)
 	/*
 		if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
@@ -213,7 +212,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += optlen
-	log.Printf("%+v\n", opts)
+	log.Printf("%0x\n", opts)
 	//	if d.Options, err = DHCPParseOptions(opts); err != nil {
 	//		return
 	//	}
