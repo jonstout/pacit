@@ -187,24 +187,25 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	d.ClientHWAddr = net.HardwareAddr(clientHWAddr[:d.HardwareLen])
 
 	n += int(d.HardwareLen)
-	if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
-		return
-	}
-	n += 64
-	if err = binary.Read(buf, binary.BigEndian, &d.File); err != nil {
-		return
-	}
-	n += 128
-
 	/*
-		var magic [4]byte
-		if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
+		if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
 			return
 		}
-		n += 4
-		if fmt.Sprintf("%s", magic) != "DHCP" {
-			return n, fmt.Errorf("Bad DHCP header %s != DHCP\n%+v\n", magic, d)
+		n += 64
+		if err = binary.Read(buf, binary.BigEndian, &d.File); err != nil {
+			return
 		}
+		n += 128
+
+		/*
+			var magic [4]byte
+			if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
+				return
+			}
+			n += 4
+			if fmt.Sprintf("%s", magic) != "DHCP" {
+				return n, fmt.Errorf("Bad DHCP header %s != DHCP\n%+v\n", magic, d)
+			}
 	*/
 	optlen := buf.Len()
 	opts := make([]byte, optlen)
