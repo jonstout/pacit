@@ -190,7 +190,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	}
 	n += 4
 	if fmt.Sprintf("%s", magic) != "DHCP" {
-		return n, errors.New("Bad DHCP header")
+		return n, fmt.Errorf("Bad DHCP header %s != DHCP", magic)
 	}
 	optlen := buf.Len()
 	opts := make([]byte, optlen)
