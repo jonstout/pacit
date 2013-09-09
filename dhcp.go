@@ -7,7 +7,6 @@ import (
 	//"io"
 	"bytes"
 	"io"
-	"log"
 	"math/rand"
 	"net"
 )
@@ -171,6 +170,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 4
+	d.ClientHWAddr = make([]byte, d.HardwareLen)
 	if err = binary.Read(buf, binary.BigEndian, &d.ClientHWAddr); err != nil {
 		return
 	}
