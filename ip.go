@@ -134,7 +134,6 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 			return int64(n), err
 		}
 	case IP_UDP:
-		log.Printf("IP LEN %d\n", i.Length)
 		i.Data = new(UDP)
 		data := make([]byte, int(i.Length-20))
 		binary.Read(r, binary.BigEndian, &data)
@@ -226,6 +225,7 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 		n += m
 	case IP_UDP:
 		i.Data = new(UDP)
+		log.Printf("DDDD %+v\n", b)
 		m, _ := i.Data.Write(b[n:])
 		n += m
 	default:
