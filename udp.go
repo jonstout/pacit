@@ -52,8 +52,8 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += 2
-	if u.Length > 8 {
-		u.Data = make([]byte, u.Length-8)
+	if u.Length > uint16(8) {
+		u.Data = make([]byte, int(u.Length-uint16(8)))
 	}
 	//	if u.Length == 0 {
 	//		u.Data = make([]byte, buf.Len())
@@ -82,7 +82,7 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 	}
 	n += 2
 	if u.Length >= uint16(8) {
-		u.Data = make([]byte, u.Length-uint16(8))
+		u.Data = make([]byte, int(u.Length-uint16(8)))
 	}
 	if u.Length == uint16(0) {
 		u.Data = make([]byte, buf.Len())
