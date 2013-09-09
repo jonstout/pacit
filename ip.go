@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"log"
 	"net"
 )
 
@@ -133,6 +134,7 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 			return int64(n), err
 		}
 	case IP_UDP:
+		log.Printf("IP LEN %d\n", i.Length)
 		i.Data = new(UDP)
 		data := make([]byte, int(i.Length-20))
 		binary.Read(r, binary.BigEndian, &data)
