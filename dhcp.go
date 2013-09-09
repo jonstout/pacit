@@ -194,6 +194,9 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	}
 	n += 128
 	log.Printf("%+v\n", d.File)
+
+	log.Printf("%+v\n", buf.Bytes())
+
 	var magic [4]byte
 	if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
 		return
