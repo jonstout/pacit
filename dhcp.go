@@ -6,9 +6,8 @@ import (
 	"errors"
 	//"io"
 	"bytes"
-	//	"fmt"
+	"fmt"
 	"io"
-	"log"
 	"math/rand"
 	"net"
 )
@@ -186,33 +185,32 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	}
 	d.ClientHWAddr = net.HardwareAddr(clientHWAddr[:d.HardwareLen])
 	n += int(d.HardwareLen)
-	/*
-		if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
-			return
-		}
-		n += 64
-		if err = binary.Read(buf, binary.BigEndian, &d.File); err != nil {
-			return
-		}
-		n += 128
 
-		/*
-			var magic [4]byte
-			if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
-				return
-			}
-			n += 4
-			if fmt.Sprintf("%s", magic) != "DHCP" {
-				return n, fmt.Errorf("Bad DHCP header %s != DHCP\n%+v\n", magic, d)
-			}
-	*/
+	if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
+		return
+	}
+	n += 64
+	if err = binary.Read(buf, binary.BigEndian, &d.File); err != nil {
+		return
+	}
+	n += 128
+
+	var magic [4]byte
+	if err = binary.Read(buf, binary.BigEndian, &magic); err != nil {
+		return
+	}
+	n += 4
+	if fmt.Sprintf("%s", magic) != "DHCP" {
+		return n, fmt.Errorf("Bad DHCP header %s != DHCP\n%+v\n", magic, d)
+	}
+
 	optlen := buf.Len()
 	opts := make([]byte, optlen)
 	if err = binary.Read(buf, binary.BigEndian, &opts); err != nil {
 		return
 	}
 	n += optlen
-	log.Printf("%0x\n", opts)
+	//log.Printf("%0x\n", opts)
 	//	if d.Options, err = DHCPParseOptions(opts); err != nil {
 	//		return
 	//	}
