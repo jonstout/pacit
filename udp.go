@@ -57,9 +57,8 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 	//	if u.Length == 0 {
 	//		u.Data = make([]byte, buf.Len())
 	//	}
-	if err = binary.Read(r, binary.BigEndian, &u.Data); err != nil {
-		return
-	}
+	m, err := io.ReadFull(r, u.Data)
+	n += m
 	return
 }
 
