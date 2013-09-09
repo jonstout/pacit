@@ -178,6 +178,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	if err = binary.Read(buf, binary.BigEndian, &d.ClientHWAddr); err != nil {
 		return
 	}
+	log.Printf("%+v\n", d.ClientHWAddr)
 	n += 16
 	if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
 		return
