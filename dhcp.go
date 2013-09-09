@@ -179,10 +179,12 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 4
-	d.ClientHWAddr = make([]byte, 16)
-	if err = binary.Read(buf, binary.BigEndian, &d.ClientHWAddr); err != nil {
+	clientHWAddr := make([]byte, d.HardwareLen)
+	if err = binary.Read(buf, binary.BigEndian, &clientHWAddr); err != nil {
 		return
 	}
+	d.ClientHWAddr = net.HardwareAddr(clientHWAddr[:d.HardwareLen])
+
 	n += int(d.HardwareLen)
 	if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
 		return
