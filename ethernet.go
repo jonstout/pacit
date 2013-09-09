@@ -118,7 +118,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 
 	switch e.Ethertype {
 	case IPv4_MSG:
-		log.Printf("ether len: %d\n", len(b[n:]))
+		log.Printf("ether len: %d pkt len$ %d\n", len(b[n:]), len(b))
 		e.Data = new(IPv4)
 		m, _ := e.Data.Write(b[n:])
 		n += m
