@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
+	"log"
 	"net"
 )
 
@@ -117,6 +118,7 @@ func (e *Ethernet) Write(b []byte) (n int, err error) {
 
 	switch e.Ethertype {
 	case IPv4_MSG:
+		log.Printf("ether len: %d\n", len(b[n:]))
 		e.Data = new(IPv4)
 		m, _ := e.Data.Write(b[n:])
 		n += m
