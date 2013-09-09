@@ -209,9 +209,9 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	optlen := buf.Len()
 	opts := make([]byte, optlen)
 	io.ReadFull(buf, opts)
-	if err = binary.Read(buf, binary.BigEndian, &opts); err != nil {
-		return
-	}
+	//	if err = binary.Read(buf, binary.BigEndian, &opts); err != nil {
+	//		return
+	//	}
 	n += optlen
 	log.Printf("%+v\n", opts)
 	//	if d.Options, err = DHCPParseOptions(opts); err != nil {
