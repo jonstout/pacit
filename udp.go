@@ -23,7 +23,6 @@ func (u *UDP) Len() (n uint16) {
 }
 
 func (u *UDP) Read(b []byte) (n int, err error) {
-	log.Printf("read\n")
 	buf := new(bytes.Buffer)
 	binary.Write(buf, binary.BigEndian, u.PortSrc)
 	binary.Write(buf, binary.BigEndian, u.PortDst)
@@ -37,7 +36,6 @@ func (u *UDP) Read(b []byte) (n int, err error) {
 }
 
 func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
-	log.Printf("readfrom\n")
 	if err = binary.Read(r, binary.BigEndian, &u.PortSrc); err != nil {
 		return
 	}
@@ -66,9 +64,7 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 func (u *UDP) Write(b []byte) (n int, err error) {
-	log.Printf("write\n")
 	buf := bytes.NewBuffer(b)
-	log.Printf("eln %d ll %d\n", buf.Len(), len(b))
 	if err = binary.Read(buf, binary.BigEndian, &u.PortSrc); err != nil {
 		return
 	}
@@ -85,15 +81,15 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 2
-	//	if u.Length >= uint16(8) {
-	//		u.Data = make([]byte, int(u.Length-uint16(8)))
-	//	}
-	//	if u.Length == uint16(0) {
-	u.Data = make([]byte, buf.Len())
-	///	}
+	if u.Length > 8 {
+		u.Data = make([]byte, u.Length-8)
+	}
+	if u.Length == 0 {
+		u.Data = make([]byte, buf.Len())
+	}
 
 	m, err := io.ReadFull(buf, u.Data)
-	log.Printf("ffff\n")
+
 	n += m
 	return
 }
