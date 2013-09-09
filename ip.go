@@ -5,6 +5,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log"
 	"net"
 )
 
@@ -191,6 +192,7 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 		m, _ := i.Data.Write(b[n:])
 		n += m
 	case IP_UDP:
+		log.Printf("ip len: %d\n", len(b[n:]))
 		i.Data = new(UDP)
 		m, _ := i.Data.Write(b[n:])
 		n += m
