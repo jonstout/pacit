@@ -189,13 +189,11 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	if err = binary.Read(buf, binary.BigEndian, &d.ServerName); err != nil {
 		return
 	}
-	log.Printf("%+v\n", d.ServerName)
 	n += 64
 	if err = binary.Read(buf, binary.BigEndian, &d.File); err != nil {
 		return
 	}
 	n += 128
-	log.Printf("%+v\n", d.File)
 
 	log.Printf("%+v\n", buf.Bytes())
 
