@@ -6,6 +6,7 @@ import (
 	"errors"
 	//"io"
 	"bytes"
+	"fmt"
 	"io"
 	"math/rand"
 	"net"
@@ -170,7 +171,6 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 4
-	d.ClientHWAddr = make([]byte, d.HardwareLen)
 	if err = binary.Read(buf, binary.BigEndian, &d.ClientHWAddr); err != nil {
 		return
 	}
@@ -189,7 +189,9 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 4
-
+	if fmt.Sprintf("%s", magic) != "DHCP" {
+		return n, errors.New("Bad DHCP header")
+	}
 	optlen := buf.Len()
 	opts := make([]byte, optlen)
 
