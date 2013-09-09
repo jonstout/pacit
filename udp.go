@@ -58,7 +58,7 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 	//		u.Data = make([]byte, buf.Len())
 	//	}
 	m, err := io.ReadFull(r, u.Data)
-	n += m
+	n += int64(m)
 	return
 }
 
