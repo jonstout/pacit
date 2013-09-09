@@ -7,6 +7,7 @@ import (
 	//"io"
 	"bytes"
 	"io"
+	"log"
 	"math/rand"
 	"net"
 )
@@ -197,7 +198,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += optlen
-
+	log.Printf("%+v\n", opts)
 	if d.Options, err = DHCPParseOptions(opts); err != nil {
 		return
 	}
