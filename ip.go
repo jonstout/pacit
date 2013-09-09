@@ -119,11 +119,13 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += 4
-	i.Options = make([]byte, 4*(int(i.IHL)-5))
-	if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
-		return
+	if int(i.IHL) > 5 {
+		i.Options = make([]byte, 4*(int(i.IHL)-5))
+		if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
+			return
+		}
+		n += int64(len(i.Options))
 	}
-	n += int64(len(i.Options))
 	switch i.Protocol {
 	case IP_ICMP:
 		trash := make([]byte, int(i.Length-20))
