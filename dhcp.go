@@ -190,7 +190,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 4
-
+	log.Printf("%s\n", magic)
 	optlen := buf.Len()
 	opts := make([]byte, optlen)
 
