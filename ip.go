@@ -121,13 +121,13 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += 4
-	if int(i.IHL) > 5 {
-		i.Options = make([]byte, 4*(int(i.IHL)-5))
-		if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
-			return
-		}
-		n += int64(len(i.Options))
+	//	if int(i.IHL) > 5 {
+	i.Options = make([]byte, 4*(int(i.IHL)-5))
+	if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
+		return
 	}
+	n += int64(len(i.Options))
+	//	}
 	switch i.Protocol {
 	case IP_ICMP:
 		trash := make([]byte, int(i.Length-20))
@@ -180,12 +180,12 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	i.NWDst = make([]byte, 4)
 	i.NWDst = b[16:20]
 	n += 4
-	if int(i.IHL) > 5 {
-		optLen := 4 * (int(i.IHL) - 5)
-		i.Options = make([]byte, optLen)
-		i.Options = b[20 : 20+optLen]
-		n += optLen
-	}
+	//	if int(i.IHL) > 5 {
+	optLen := 4 * (int(i.IHL) - 5)
+	i.Options = make([]byte, optLen)
+	i.Options = b[20 : 20+optLen]
+	n += optLen
+	//	}
 	switch i.Protocol {
 	case IP_ICMP:
 		i.Data = new(ICMP)
