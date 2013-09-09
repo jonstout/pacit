@@ -127,7 +127,6 @@ func (d *DHCP) Read(b []byte) (n int, err error) {
 }
 
 func (d *DHCP) Write(b []byte) (n int, err error) {
-	log.Printf("%d\n", len(b))
 	if len(b) < 240 {
 		return 0, fmt.Errorf("dhcp packet too short < 240 bytes")
 	}
@@ -191,6 +190,7 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 64
+	log.Printf("%+v\n", buf.Bytes())
 	if err = binary.Read(buf, binary.BigEndian, &d.File); err != nil {
 		return
 	}
