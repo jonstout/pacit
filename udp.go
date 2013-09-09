@@ -81,19 +81,13 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 2
-	/*
-		if u.Length >= 8 {
-			u.Data = make([]byte, u.Length-8)
-		}
-		if u.Length == 0 {
-			u.Data = make([]byte, buf.Len())
-		}
-
-		if err = binary.Read(buf, binary.BigEndian, &u.Data); err != nil {
-			return
-		}
-	*/
-	n += copy(u.Data, b[n:])
-	//	n += len(u.Data)
+	if u.Length >= 8 {
+		u.Data = make([]byte, u.Length-8)
+	}
+	if u.Length == 0 {
+		u.Data = make([]byte, buf.Len())
+	}
+	m, err := io.ReadFull(buf, u.Data)
+	n += m
 	return
 }
