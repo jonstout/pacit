@@ -127,6 +127,7 @@ func (d *DHCP) Read(b []byte) (n int, err error) {
 }
 
 func (d *DHCP) Write(b []byte) (n int, err error) {
+	log.Printf("%d\n", len(b))
 	if len(b) < 240 {
 		return 0, fmt.Errorf("dhcp packet too short < 240 bytes")
 	}
