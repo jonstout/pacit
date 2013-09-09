@@ -68,7 +68,7 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 func (u *UDP) Write(b []byte) (n int, err error) {
 	log.Printf("write\n")
 	buf := bytes.NewBuffer(b)
-	log.Printf("eln %d\n", buf.Len())
+	log.Printf("eln %d ll %d\n", buf.Len(), len(b))
 	if err = binary.Read(buf, binary.BigEndian, &u.PortSrc); err != nil {
 		return
 	}
