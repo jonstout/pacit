@@ -93,6 +93,7 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 	///	}
 
 	m, err := io.ReadFull(buf, u.Data)
+	log.Printf("ffff\n")
 	n += m
 	return
 }
