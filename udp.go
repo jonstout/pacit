@@ -73,7 +73,7 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 	}
 	n += 2
 	if u.Length >= 8 {
-		u.Data = make([]byte, u.Length)
+		u.Data = make([]byte, u.Length-8)
 	}
 	if u.Length == 0 {
 		u.Data = make([]byte, buf.Len())
