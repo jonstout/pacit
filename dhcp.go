@@ -130,7 +130,11 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 	if len(b) < 240 {
 		return 0, fmt.Errorf("dhcp packet too short < 240 bytes")
 	}
+	log.Printf("bb %+v\n", b)
 	buf := bytes.NewBuffer(b)
+
+	log.Printf("bbuf %+v\n", buf.Bytes())
+
 	if err = binary.Read(buf, binary.BigEndian, &d.Operation); err != nil {
 		return
 	}
