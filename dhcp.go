@@ -155,18 +155,22 @@ func (d *DHCP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 2
+	d.ClientIP = make([]byte, 4)
 	if err = binary.Read(buf, binary.BigEndian, &d.ClientIP); err != nil {
 		return
 	}
 	n += 4
+	d.YourIP = make([]byte, 4)
 	if err = binary.Read(buf, binary.BigEndian, &d.YourIP); err != nil {
 		return
 	}
 	n += 4
+	d.ServerIP = make([]byte, 4)
 	if err = binary.Read(buf, binary.BigEndian, &d.ServerIP); err != nil {
 		return
 	}
 	n += 4
+	d.GatewayIP = make([]byte, 4)
 	if err = binary.Read(buf, binary.BigEndian, &d.GatewayIP); err != nil {
 		return
 	}
