@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/binary"
 	"io"
-	"log"
 	"net"
 )
 
@@ -211,13 +210,15 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	}*/
 	i.NWDst = b[16:20]
 	n += 4
-	optLen := 4 * (int(i.IHL) - 5)
-	i.Options = make([]byte, optLen) //4*(int(i.IHL) - 5))
-	/*if err = binary.Read(buf, binary.BigEndian, &i.Options); err != nil {
-		return
-	}*/
-	i.Options = b[20 : 20+optLen]
-	n += optLen //len(i.Options)
+	if int(i.IHL) > 5 {
+		optLen := 4 * (int(i.IHL) - 5)
+		i.Options = make([]byte, optLen) //4*(int(i.IHL) - 5))
+		/*if err = binary.Read(buf, binary.BigEndian, &i.Options); err != nil {
+			return
+		}*/
+		i.Options = b[20 : 20+optLen]
+		n += optLen //len(i.Options)
+	}
 	switch i.Protocol {
 	case IP_ICMP:
 		i.Data = new(ICMP)
@@ -225,7 +226,6 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 		n += m
 	case IP_UDP:
 		i.Data = new(UDP)
-		log.Printf("DDDD %+v\n", b)
 		m, _ := i.Data.Write(b[n:])
 		n += m
 	default:
