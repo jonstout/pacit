@@ -220,11 +220,17 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 	switch i.Protocol {
 	case IP_ICMP:
 		i.Data = new(ICMP)
-		m, _ := i.Data.Write(b[n:])
+		m, err := i.Data.Write(b[n:])
+		if err != nil {
+			return m, err
+		}
 		n += m
 	case IP_UDP:
 		i.Data = new(UDP)
-		m, _ := i.Data.Write(b[n:])
+		m, err := i.Data.Write(b[n:])
+		if err != nil {
+			return m, err
+		}
 		n += m
 	default:
 		//		panic(fmt.Sprintf("%0x\n", i.Protocol))
