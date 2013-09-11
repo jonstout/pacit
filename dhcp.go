@@ -20,7 +20,7 @@ const (
 	DHCP_MSG_UNSPEC DHCPOperation = iota
 	DHCP_MSG_DISCOVER
 	DHCP_MSG_OFFER
-	DHCP_MSG_REQUST
+	DHCP_MSG_REQUEST
 	DHCP_MSG_DECLINE
 	DHCP_MSG_ACK
 	DHCP_MSG_NAK
@@ -134,8 +134,20 @@ func (d *DHCP) Read(b []byte) (n int, err error) {
 	n += 128
 	binary.Write(buf, binary.BigEndian, dhcpMagic)
 	n += 4
+
+	optend := false
 	for _, opt := range d.Options {
 		m, err := DHCPWriteOption(buf, opt)
+		n += m
+		if err != nil {
+			return n, err
+		}
+		if opt.OptionType() == DHCP_OPT_END {
+			optend = true
+		}
+	}
+	if !optend {
+		m, err := DHCPWriteOption(buf, DHCPNewOption(DHCP_OPT_END, []byte{}))
 		n += m
 		if err != nil {
 			return n, err
@@ -473,5 +485,56 @@ func DHCPParseOptions(in []byte) (opts []DHCPOption, err error) {
 			}
 		}
 	}
+	return
+}
+
+func NewDHCPDiscover(xid uint32, hwAddr net.HardwareAddr) (d *DHCP, err error) {
+	if d, err = NewDHCP(xid, DHCP_MSG_DISCOVER, DHCP_HW_ETHERNET); err != nil {
+		return
+	}
+	d.HardwareLen = uint8(len(hwAddr))
+	d.ClientHWAddr = hwAddr
+	d.Options = append(d.Options, DHCPNewOption(53, []byte{byte(DHCP_MSG_DISCOVER)}))
+	d.Options = append(d.Options, DHCPNewOption(DHCP_OPT_CLIENT_ID, hwAddr))
+	return
+}
+
+func NewDHCPOffer(xid uint32, hwAddr net.HardwareAddr) (d *DHCP, err error) {
+	if d, err = NewDHCP(xid, DHCP_MSG_OFFER, DHCP_HW_ETHERNET); err != nil {
+		return
+	}
+	d.HardwareLen = uint8(len(hwAddr))
+	d.ClientHWAddr = hwAddr
+	d.Options = append(d.Options, DHCPNewOption(53, []byte{byte(DHCP_MSG_OFFER)}))
+	return
+}
+
+func NewDHCPRequest(xid uint32, hwAddr net.HardwareAddr) (d *DHCP, err error) {
+	if d, err = NewDHCP(xid, DHCP_MSG_REQUEST, DHCP_HW_ETHERNET); err != nil {
+		return
+	}
+	d.HardwareLen = uint8(len(hwAddr))
+	d.ClientHWAddr = hwAddr
+	d.Options = append(d.Options, DHCPNewOption(53, []byte{byte(DHCP_MSG_REQUEST)}))
+	return
+}
+
+func NewDHCPAck(xid uint32, hwAddr net.HardwareAddr) (d *DHCP, err error) {
+	if d, err = NewDHCP(xid, DHCP_MSG_ACK, DHCP_HW_ETHERNET); err != nil {
+		return
+	}
+	d.HardwareLen = uint8(len(hwAddr))
+	d.ClientHWAddr = hwAddr
+	d.Options = append(d.Options, DHCPNewOption(53, []byte{byte(DHCP_MSG_ACK)}))
+	return
+}
+
+func NewDHCPNak(xid uint32, hwAddr net.HardwareAddr) (d *DHCP, err error) {
+	if d, err = NewDHCP(xid, DHCP_MSG_NAK, DHCP_HW_ETHERNET); err != nil {
+		return
+	}
+	d.HardwareLen = uint8(len(hwAddr))
+	d.ClientHWAddr = hwAddr
+	d.Options = append(d.Options, DHCPNewOption(53, []byte{byte(DHCP_MSG_NAK)}))
 	return
 }
