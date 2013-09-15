@@ -1,19 +1,25 @@
 package pacit
 
 import (
-	"bytes"
-	"encoding/binary"
-	"io"
+//	"bytes"
+//	"encoding/binary"
+//"io"
 )
 
-type UDP struct {
-	PortSrc  uint16
-	PortDst  uint16
-	Length   uint16
+type TCP struct {
+	PortSrc uint16
+	PortDst uint16
+	SeqNum  uint32
+	AckNum  uint32
+
+	WinSize  uint16
 	Checksum uint16
-	Data     []byte
+	UrgFlag  uint16
+
+	Data []byte
 }
 
+/*
 func (u *UDP) Len() (n uint16) {
 	if u.Data != nil {
 		return uint16(8 + len(u.Data))
@@ -51,14 +57,6 @@ func (u *UDP) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += 2
-	if u.Length > uint16(8) {
-		u.Data = make([]byte, int(u.Length-uint16(8)))
-	}
-	//	if u.Length == 0 {
-	//		u.Data = make([]byte, buf.Len())
-	//	}
-	m, err := io.ReadFull(r, u.Data)
-	n += int64(m)
 	return
 }
 
@@ -80,9 +78,11 @@ func (u *UDP) Write(b []byte) (n int, err error) {
 		return
 	}
 	n += 2
-	if u.Length > 8 {
-		u.Data = make([]byte, u.Length-8)
+	u.Data = make([]byte, len(b)-n)
+	if err = binary.Read(buf, binary.BigEndian, &u.Data); err != nil {
+		return
 	}
 	n += len(u.Data)
 	return
 }
+*/

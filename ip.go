@@ -3,6 +3,7 @@ package pacit
 import (
 	"bytes"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"net"
 )
@@ -119,11 +120,13 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 		return
 	}
 	n += 4
-	i.Options = make([]byte, 4*(int(i.IHL)-5))
-	if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
-		return
+	if int(i.IHL) > 5 {
+		i.Options = make([]byte, 4*(int(i.IHL)-5))
+		if err = binary.Read(r, binary.BigEndian, &i.Options); err != nil {
+			return
+		}
+		n += int64(len(i.Options))
 	}
-	n += int64(len(i.Options))
 	switch i.Protocol {
 	case IP_ICMP:
 		trash := make([]byte, int(i.Length-20))
@@ -134,9 +137,9 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 		}
 	case IP_UDP:
 		i.Data = new(UDP)
-		trash := make([]byte, int(i.Length-20))
-		binary.Read(r, binary.BigEndian, &trash)
-		if n, err := i.Data.Read(trash); err != nil {
+		data := make([]byte, int(i.Length-20))
+		binary.Read(r, binary.BigEndian, &data)
+		if n, err := i.Data.Read(data); err != nil {
 			return int64(n), err
 		}
 	default:
@@ -148,75 +151,40 @@ func (i *IPv4) ReadFrom(r io.Reader) (n int64, err error) {
 }
 
 func (i *IPv4) Write(b []byte) (n int, err error) {
-	//buf := bytes.NewBuffer(b)
-	//var verIhl uint8 = 0
-	/*if err = binary.Read(buf, binary.BigEndian, &verIhl); err != nil {
-		return
-	}*/
 	verIhl := b[0]
 	n += 1
 	i.Version = verIhl >> 4
 	i.IHL = verIhl & 0x0f
-	/*var dscpEcn uint8 = 0
-		if err = binary.Read(buf, binary.BigEndian, &dscpEcn); err != nil {
-	x		return
-		}*/
 	dscpEcn := b[1]
 	n += 1
 	i.DSCP = dscpEcn >> 2
 	i.ECN = dscpEcn & 0x03
-	/*if err = binary.Read(buf, binary.BigEndian, &i.Length); err != nil {
-		return
-	}*/
 	i.Length = binary.BigEndian.Uint16(b[2:4])
 	n += 2
-	/*if err = binary.Read(buf, binary.BigEndian, &i.ID); err != nil {
-		return
-	}*/
 	i.ID = binary.BigEndian.Uint16(b[4:6])
 	n += 2
-	/*var flagsFrag uint16 = 0
-	if err = binary.Read(buf, binary.BigEndian, &flagsFrag); err != nil {
-		return
-	}*/
 	flagsFrag := binary.BigEndian.Uint16(b[6:8])
 	n += 2
 	i.Flags = flagsFrag >> 13
 	i.FragmentOffset = flagsFrag & 0x1fff
-	/*if err = binary.Read(buf, binary.BigEndian, &i.TTL); err != nil {
-		return
-	}*/
 	i.TTL = b[8]
 	n += 1
-	/*if err = binary.Read(buf, binary.BigEndian, &i.Protocol); err != nil {
-		return
-	}*/
 	i.Protocol = b[9]
 	n += 1
-	/*if err = binary.Read(buf, binary.BigEndian, &i.Checksum); err != nil {
-		return
-	}*/
 	i.Checksum = binary.BigEndian.Uint16(b[10:12])
 	n += 2
 	i.NWSrc = make([]byte, 4)
-	/*if err = binary.Read(buf, binary.BigEndian, &i.NWSrc); err != nil {
-		return
-	}*/
 	i.NWSrc = b[12:16]
 	n += 4
 	i.NWDst = make([]byte, 4)
-	/*if err = binary.Read(buf, binary.BigEndian, &i.NWDst); err != nil {
-		return
-	}*/
 	i.NWDst = b[16:20]
 	n += 4
-	optLen := 4 * (int(i.IHL) - 5)
-	i.Options = make([]byte, optLen) //4*(int(i.IHL) - 5))
-	/*if err = binary.Read(buf, binary.BigEndian, &i.Options); err != nil {
-		return
-	}*/
-	i.Options = b[20 : 20+optLen]
-	n += optLen //len(i.Options)
+	if int(i.IHL) > 5 {
+		optLen := 4 * (int(i.IHL) - 5)
+		i.Options = make([]byte, optLen)
+		i.Options = b[20 : 20+optLen]
+		n += optLen
+	}
 	switch i.Protocol {
 	case IP_ICMP:
 		i.Data = new(ICMP)
@@ -233,7 +201,7 @@ func (i *IPv4) Write(b []byte) (n int, err error) {
 		}
 		n += m
 	default:
-		//		panic(fmt.Sprintf("%0x\n", i.Protocol))
+		panic(fmt.Sprintf("%0x\n", i.Protocol))
 		//		trash := make([]byte, int(i.Length-20))
 		//		binary.Read(buf, binary.BigEndian, &trash)
 		n = int(i.Length)
